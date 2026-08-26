@@ -267,9 +267,12 @@
   <div id="toast" class="fixed bottom-6 right-6 panel-2 p-4 hidden" style="z-index: 100; min-width: 280px;"></div>
 
   <script>
+    // Backend API lives on bk-jr-api.aixlabs.fun (the Telnyx webhook receiver tunnel)
+    // The dashboard at agentops.getbijou.xyz calls it cross-origin with CORS.
     const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ? 'http://127.0.0.1:8080' : '';  // Same-origin when behind a reverse proxy
-    document.getElementById('backend-url').textContent = API_BASE || 'same-origin';
+      ? 'http://127.0.0.1:8080'
+      : 'https://bk-jr-api.aixlabs.fun';
+    document.getElementById('backend-url').textContent = API_BASE;
 
     let state = null;
     let pollTimer = null;

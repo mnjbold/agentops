@@ -1,0 +1,15 @@
+﻿# env / secrets
+.env
+.env.*
+*.log
+node_modules/
+__pycache__/
+.venv/
+dist/
+build/
+.DS_Store
+
+# editor
+.vscode/
+.idea/
+*.swp

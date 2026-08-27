@@ -1075,23 +1075,36 @@
       // n.type can be "callUpdate", "userMediaError", etc.
       if (n.type === 'callUpdate' && n.call) {
         const call = n.call;
-        activeCall = call;
         const state = call.state;
+        // Telnyx Verto states: new, trying, ringing, early, active, confirmed, terminated/destroy/hangup
         if (state === 'ringing') {
-          // Inbound
-          fsm.fire('incomingCall');
-          view.setStatus(fsm.state);
-          const remote = call.options?.remoteCallerNumber || call.parameters?.From || 'Unknown';
-          view.showCallCard(remote, 'Incoming call');
-          view.setCallState('Ringing — answer in another tab or wait');
-        } else if (state === 'active') {
-          fsm.fire('remoteAnswer');
-          view.setStatus(fsm.state);
-        } else if (state === 'destroy' || state === 'hangup') {
-          fsm.fire('remoteHangup');
-          view.setStatus(fsm.state);
-          view.showDialer();
-          activeCall = null;
+          // Inbound ringing — only fire if we're not already in a call
+          if (fsm.state === 'Ready' || fsm.state === 'Initial') {
+            activeCall = call;
+            fsm.fire('incomingCall');
+            view.setStatus(fsm.state);
+            const remote = call.options?.remoteCallerNumber || call.parameters?.From || 'Unknown';
+            view.showCallCard(remote, 'Incoming call');
+            view.setCallState('Ringing — answer in another tab or wait');
+          }
+        } else if (state === 'active' || state === 'confirmed' || state === 'early') {
+          // Call answered. Only fire from Dialing or ReceivingCall (FSM allows remoteAnswer from those).
+          if (fsm.state === 'Dialing' || fsm.state === 'ReceivingCall') {
+            activeCall = call;
+            fsm.fire('remoteAnswer');
+            view.setStatus(fsm.state);
+          }
+        } else if (state === 'destroy' || state === 'hangup' || state === 'terminated' || state === 'purge') {
+          // Call ended. Only fire remoteHangup if FSM is in a state that has an active call.
+          if (fsm.state === 'Dialing' || fsm.state === 'OnCall' || fsm.state === 'OnHold' || fsm.state === 'ReceivingCall') {
+            fsm.fire('remoteHangup');
+            view.setStatus(fsm.state);
+            view.showDialer();
+            activeCall = null;
+          }
+          // If FSM is already in Ready/Initial, the call ended before we knew about it.
+          // Clear any stale activeCall ref but don't fire (would log a "not allowed" warning).
+          if (activeCall === call) activeCall = null;
         }
       }
     }

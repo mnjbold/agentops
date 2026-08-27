@@ -3,7 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>W3J Softphone — Telephony That Beats RingCentral</title>
+  <title>agentops — Cloud Telephony</title>
+  <!-- PWA shell (v0.4.0) -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="agentops">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -199,8 +206,8 @@
           <svg class="w-6 h-6" fill="none" stroke="#001a14" viewBox="0 0 24 24" stroke-width="2.5"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.5 4.34a1 1 0 01-.27 1.05L8.21 10.7a13 13 0 006.07 6.07l1.66-1.25a1 1 0 011.05-.27l4.34 1.5a1 1 0 01.68.95V20a2 2 0 01-2 2h-1C9.61 22 2 14.39 2 5V4z"/></svg>
         </div>
         <div>
-          <h1 class="text-xl font-bold">W3J Softphone</h1>
-          <p class="text-xs text-gray-500 mono">v0.3.0 · agent console · Telnyx WebRTC</p>
+          <h1 class="text-xl font-bold">agentops</h1>
+          <p class="text-xs text-gray-500 mono">v0.4.0 · agent console · Telnyx WebRTC</p>
         </div>
       </div>
       <h2 class="text-2xl font-bold mb-1">Sign in</h2>
@@ -233,8 +240,8 @@
             <svg class="w-4 h-4" fill="none" stroke="#001a14" viewBox="0 0 24 24" stroke-width="2.5"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.5 4.34a1 1 0 01-.27 1.05L8.21 10.7a13 13 0 006.07 6.07l1.66-1.25a1 1 0 011.05-.27l4.34 1.5a1 1 0 01.68.95V20a2 2 0 01-2 2h-1C9.61 22 2 14.39 2 5V4z"/></svg>
           </div>
           <div>
-            <h1 class="text-base font-bold">W3J Softphone</h1>
-            <p class="text-[10px] text-gray-500 mono">v0.3.0 · <span id="user-label">agent</span></p>
+            <h1 class="text-base font-bold">agentops</h1>
+            <p class="text-[10px] text-gray-500 mono">v0.4.0 · <span id="user-label">agent</span></p>
           </div>
           <span class="ml-3 pill pill-on" id="status-pill"><span class="dot dot-on" id="status-dot"></span> <span id="status-text">Ready</span></span>
           <span id="sdk-debug" class="ml-2 text-[10px] mono text-gray-500" title="WebRTC SDK diagnostic">sdk:…</span>
@@ -2060,6 +2067,93 @@
         }
       });
     }
+  </script>
+  <!-- ============================================================
+       PWA install banner + service-worker registration (v0.4.0)
+       ============================================================ -->
+  <div id="pwa-install-banner"
+       class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[min(560px,calc(100vw-2rem))] rounded-xl shadow-2xl border border-slate-700 bg-slate-900/95 backdrop-blur px-4 py-3 flex items-center gap-3"
+       role="status" aria-live="polite">
+    <div class="flex-1 min-w-0">
+      <p class="text-sm font-semibold text-slate-100">Install agentops</p>
+      <p class="text-xs text-slate-400 mt-0.5">Add the softphone to your home screen for one-tap calling — no browser bar.</p>
+    </div>
+    <button id="pwa-install-dismiss"
+            type="button"
+            class="text-xs text-slate-400 hover:text-slate-200 px-2 py-1 rounded">
+      Not now
+    </button>
+    <button id="pwa-install-action"
+            type="button"
+            class="text-xs font-semibold text-slate-900 bg-sky-400 hover:bg-sky-300 px-3 py-1.5 rounded-md">
+      Install
+    </button>
+  </div>
+  <script>
+    (function () {
+      'use strict';
+      // 1. Service worker — registers /sw.js at root scope so it can
+      //    intercept fetches across the whole origin.
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('/sw.js').catch(function (err) {
+            console.warn('[pwa] service worker registration failed', err);
+          });
+        });
+      }
+
+      // 2. Install prompt — show a custom banner on first visit, hide forever
+      //    once dismissed (per origin, per device, in localStorage).
+      var banner = document.getElementById('pwa-install-banner');
+      var dismissBtn = document.getElementById('pwa-install-dismiss');
+      var installBtn = document.getElementById('pwa-install-action');
+      if (!banner || !dismissBtn || !installBtn) return;
+
+      var DISMISS_KEY = 'agentops_pwa_install_dismissed';
+      if (localStorage.getItem(DISMISS_KEY) === '1') {
+        banner.classList.add('hidden');
+        return;
+      }
+
+      var deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', function (e) {
+        // The browser will fire this only if the site meets installability
+        // criteria (manifest, SW, served over HTTPS, has engagement).
+        e.preventDefault();
+        deferredPrompt = e;
+        banner.classList.remove('hidden');
+      });
+
+      function dismissForever() {
+        localStorage.setItem(DISMISS_KEY, '1');
+        banner.classList.add('hidden');
+      }
+      dismissBtn.addEventListener('click', dismissForever);
+
+      installBtn.addEventListener('click', function () {
+        if (!deferredPrompt) {
+          // Browser didn't surface a prompt (e.g. already installed) —
+          // just hide the banner without persisting dismissal in case a
+          // future trigger fires.
+          banner.classList.add('hidden');
+          return;
+        }
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function (choice) {
+          if (choice && choice.outcome === 'dismissed') {
+            dismissForever();
+          } else {
+            banner.classList.add('hidden');
+          }
+          deferredPrompt = null;
+        }).catch(function () { banner.classList.add('hidden'); });
+      });
+
+      // If the app gets installed via the browser UI, hide the banner.
+      window.addEventListener('appinstalled', function () {
+        dismissForever();
+      });
+    })();
   </script>
 </body>
 </html>

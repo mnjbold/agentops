@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>agentops — Cloud Telephony</title>
+  <title>agentops â€” Cloud Telephony</title>
   <!-- PWA shell (v0.4.0) -->
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" href="/icons/icon-192.png">
@@ -96,10 +96,29 @@
     .tab { padding: 10px 16px; cursor: pointer; border-bottom: 2px solid transparent; color: var(--muted); font-weight: 500; font-size: 14px; transition: all 0.15s; }
     .tab-active { color: var(--text); border-bottom-color: var(--accent); }
     .tab:hover { color: var(--text); }
-    .keypad-key { aspect-ratio: 1.4; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 500; background: var(--panel2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.1s; user-select: none; }
-    .keypad-key:hover { background: var(--panel); border-color: var(--accent); }
-    .keypad-key:active { transform: scale(0.95); }
-    .keypad-key .sub { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; letter-spacing: 0.1em; }
+    .keypad-key {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center; flex-direction: column;
+      font-size: 24px; font-weight: 400; color: var(--text);
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 50%; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+      transition: background 0.08s, transform 0.08s, box-shadow 0.08s;
+      width: 100%; max-width: 68px; min-width: 56px; aspect-ratio: 1;
+    }
+    .keypad-key:hover { background: rgba(255,255,255,0.08); }
+    .keypad-key:active, .keypad-key.pressed { background: var(--accent); color: #001a14; transform: scale(0.94); box-shadow: 0 0 0 6px rgba(0,212,170,0.15); }
+    .keypad-key .sub { display: block; font-size: 9px; font-weight: 600; color: var(--muted); margin-top: 1px; letter-spacing: 0.15em; }
+    .keypad-key:active .sub, .keypad-key.pressed .sub { color: #001a14; }
+    .keypad-action {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      border-radius: 50%; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent;
+      font-size: 18px; transition: background 0.1s, transform 0.08s;
+      width: 100%; max-width: 68px; min-width: 56px;
+    }
+    .keypad-action:active { transform: scale(0.94); }
+    .keypad-call  { background: #00d4aa; color: #001a14; }
+    .keypad-call:active { background: #00bf9a; }
+    .keypad-back  { background: transparent; color: var(--muted); }
+    .keypad-back:active { background: rgba(255,255,255,0.06); color: var(--text); }
     .ringing { animation: pulse-ring 1s infinite; }
     @keyframes pulse-ring { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 176, 32, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 176, 32, 0); } }
     .call-card-active { background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(124, 92, 255, 0.1)); border-color: var(--accent); }
@@ -128,7 +147,7 @@
     .call-card-dialing { background: linear-gradient(135deg, rgba(124, 92, 255, 0.10), rgba(0, 212, 170, 0.08)); border-color: var(--accent2); }
     .dialpad-skel { width: 36px; height: 6px; background: var(--border); border-radius: 3px; margin: 6px auto 0; opacity: 0.6; }
 
-    /* ───── Incoming call modal (v0.3.0) ───── */
+    /* â”€â”€â”€â”€â”€ Incoming call modal (v0.3.0) â”€â”€â”€â”€â”€ */
     .incoming-modal-bg { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px); }
     .incoming-card {
       background: linear-gradient(160deg, #1a1c28 0%, #11121a 100%);
@@ -141,7 +160,7 @@
       text-align: center;
     }
 
-    /* ───── Persistent call bar (v0.4.1 — mobile-friendly always-visible strip) ───── */
+    /* â”€â”€â”€â”€â”€ Persistent call bar (v0.4.2 â€” mobile-friendly always-visible strip) â”€â”€â”€â”€â”€ */
     .call-bar {
       position: fixed; left: 0; right: 0; bottom: 0;
       z-index: 60;
@@ -203,7 +222,7 @@
     .incoming-accept { background: var(--accent); color: #001a14; }
     .incoming-decline { background: var(--danger); color: white; }
 
-    /* ───── Toast notifications (top-right slide-in) ───── */
+    /* â”€â”€â”€â”€â”€ Toast notifications (top-right slide-in) â”€â”€â”€â”€â”€ */
     .toast-stack {
       position: fixed; top: 80px; right: 16px;
       z-index: 60;
@@ -249,7 +268,7 @@
         </div>
         <div>
           <h1 class="text-xl font-bold">agentops</h1>
-          <p class="text-xs text-gray-500 mono">v0.4.1 · agent console · Telnyx WebRTC</p>
+          <p class="text-xs text-gray-500 mono">v0.4.2 Â· agent console Â· Telnyx WebRTC</p>
         </div>
       </div>
       <h2 class="text-2xl font-bold mb-1">Sign in</h2>
@@ -261,14 +280,14 @@
         </div>
         <div>
           <label class="text-xs text-gray-400 mb-1 block">Password</label>
-          <input id="login-password" type="password" placeholder="••••••••" value="demo" required />
+          <input id="login-password" type="password" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" value="demo" required />
         </div>
-        <button type="submit" class="btn btn-primary w-full">Sign in →</button>
+        <button type="submit" class="btn btn-primary w-full">Sign in â†’</button>
       </form>
       <p id="login-error" class="text-xs text-red-400 mt-3 hidden"></p>
       <div class="mt-6 pt-6 border-t border-gray-800 text-xs text-gray-500">
         <p>Backend: <span class="mono" id="backend-url">https://bk-jr-api.aixlabs.fun</span></p>
-        <p class="mt-1">Telephony: Telnyx WebRTC SDK · WSS via Cloudflare</p>
+        <p class="mt-1">Telephony: Telnyx WebRTC SDK Â· WSS via Cloudflare</p>
       </div>
     </div>
   </div>
@@ -283,27 +302,27 @@
           </div>
           <div>
             <h1 class="text-base font-bold">agentops</h1>
-            <p class="text-[10px] text-gray-500 mono">v0.4.1 · <span id="user-label">agent</span></p>
+            <p class="text-[10px] text-gray-500 mono">v0.4.2 Â· <span id="user-label">agent</span></p>
           </div>
           <span class="ml-3 pill pill-on" id="status-pill"><span class="dot dot-on" id="status-dot"></span> <span id="status-text">Ready</span></span>
-          <span id="sdk-debug" class="ml-2 text-[10px] mono text-gray-500" title="WebRTC SDK diagnostic">sdk:…</span>
+          <span id="sdk-debug" class="ml-2 text-[10px] mono text-gray-500" title="WebRTC SDK diagnostic">sdk:â€¦</span>
           <span class="ml-2 ws-status text-[10px] mono text-gray-500" title="WebSocket event stream" id="ws-status"><span class="dot dot-off"></span> <span id="ws-status-text">ws:off</span></span>
         </div>
         <div class="flex items-center gap-3">
           <div class="text-right">
             <p class="text-xs text-gray-500">Balance</p>
-            <p class="text-lg font-bold mono" id="header-balance">$— USD</p>
+            <p class="text-lg font-bold mono" id="header-balance">$â€” USD</p>
           </div>
           <button class="btn btn-ghost" onclick="openSettings()">Settings</button>
           <button class="btn btn-ghost" onclick="logout()">Sign out</button>
         </div>
       </div>
       <div class="max-w-7xl mx-auto px-6 flex gap-1 overflow-x-auto">
-        <div class="tab tab-active" data-tab="dialer" onclick="switchTab('dialer')">📞 Softphone</div>
-        <div class="tab" data-tab="messages" onclick="switchTab('messages')">💬 Messages<span class="tab-badge hidden" id="messages-badge">0</span></div>
-        <div class="tab" data-tab="history" onclick="switchTab('history')">📋 History<span class="tab-badge hidden" id="history-badge">0</span></div>
-        <div class="tab" data-tab="recordings" onclick="switchTab('recordings')">🎙️ Recordings<span class="tab-badge tab-badge-accent hidden" id="recordings-badge">0</span></div>
-        <div class="tab" data-tab="admin" onclick="switchTab('admin')">⚙️ Admin</div>
+        <div class="tab tab-active" data-tab="dialer" onclick="switchTab('dialer')">ðŸ“ž Softphone</div>
+        <div class="tab" data-tab="messages" onclick="switchTab('messages')">ðŸ’¬ Messages<span class="tab-badge hidden" id="messages-badge">0</span></div>
+        <div class="tab" data-tab="history" onclick="switchTab('history')">ðŸ“‹ History<span class="tab-badge hidden" id="history-badge">0</span></div>
+        <div class="tab" data-tab="recordings" onclick="switchTab('recordings')">ðŸŽ™ï¸ Recordings<span class="tab-badge tab-badge-accent hidden" id="recordings-badge">0</span></div>
+        <div class="tab" data-tab="admin" onclick="switchTab('admin')">âš™ï¸ Admin</div>
       </div>
     </header>
 
@@ -314,42 +333,57 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <!-- Active call card (or dialer) -->
           <div class="lg:col-span-2 space-y-4">
-            <!-- IDLE: dial pad -->
-            <div id="dialer-card" class="panel p-6">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="font-semibold flex items-center gap-2">
+            <!-- IDLE: dial pad (v0.4.2 â€” phone-style, responsive, circular keys) -->
+            <div id="dialer-card" class="panel p-4 sm:p-6">
+              <div class="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+                <h3 class="font-semibold flex items-center gap-2 text-sm sm:text-base">
                   <span class="dot dot-on"></span>
                   Place a call
                 </h3>
-                <div class="flex items-center gap-2 text-xs text-gray-500">
+                <!-- From selector â€” hidden on mobile, expanded on desktop -->
+                <label class="hidden md:flex items-center gap-2 text-xs text-gray-500">
                   <span>From:</span>
                   <select id="caller-number" class="text-xs py-1 px-2" style="width: auto;">
+                    <option value="+15078731084" selected>+1 507 873 1084 (clean line Â· default)</option>
                     <option value="+13079999692">+1 307 999 9692 (W3J LLC)</option>
                     <option value="+13204280793">+1 320 428 0793 (Bijou)</option>
-                    <option value="+18444618814">+1 844 461 8814 (Personal Twin)</option>
+                    <option value="+18444618814">+1 844 461 8814 (Personal Twin Â· has AI)</option>
                   </select>
-                </div>
+                </label>
               </div>
-              <div class="mb-4">
-                <input id="number-input" type="tel" placeholder="+1 555 123 4567" class="text-2xl mono text-center py-4" />
+              <!-- Mobile-only compact "From" pill (tap to cycle numbers) -->
+              <div class="md:hidden mb-2 flex items-center justify-center">
+                <button id="caller-pill" type="button" onclick="cycleCallerOnMobile()"
+                        class="text-[11px] mono text-gray-400 bg-white/5 border border-white/10 rounded-full px-3 py-1 flex items-center gap-1.5 active:scale-95 transition">
+                  <span>From</span>
+                  <span id="caller-pill-num" class="text-gray-200">+1 507 873 1084</span>
+                  <span class="text-gray-500">â†»</span>
+                </button>
               </div>
-              <div class="grid grid-cols-3 gap-3 max-w-sm mx-auto mb-4">
-                <div class="keypad-key" onclick="dialPad('1')">1<span class="sub">&nbsp;</span></div>
-                <div class="keypad-key" onclick="dialPad('2')">2<span class="sub">ABC</span></div>
-                <div class="keypad-key" onclick="dialPad('3')">3<span class="sub">DEF</span></div>
-                <div class="keypad-key" onclick="dialPad('4')">4<span class="sub">GHI</span></div>
-                <div class="keypad-key" onclick="dialPad('5')">5<span class="sub">JKL</span></div>
-                <div class="keypad-key" onclick="dialPad('6')">6<span class="sub">MNO</span></div>
-                <div class="keypad-key" onclick="dialPad('7')">7<span class="sub">PQRS</span></div>
-                <div class="keypad-key" onclick="dialPad('8')">8<span class="sub">TUV</span></div>
-                <div class="keypad-key" onclick="dialPad('9')">9<span class="sub">WXYZ</span></div>
-                <div class="keypad-key" onclick="dialPad('*')">*</div>
-                <div class="keypad-key" onclick="dialPad('0')">0<span class="sub">+</span></div>
-                <div class="keypad-key" onclick="dialPad('#')">#</div>
+              <div class="mb-3 sm:mb-4">
+                <input id="number-input" type="tel" inputmode="tel" autocomplete="off" placeholder="+1 555 123 4567"
+                       class="w-full text-xl sm:text-2xl mono text-center py-3 sm:py-4 bg-transparent" style="letter-spacing: 0.04em;" />
               </div>
-              <div class="flex gap-2 max-w-sm mx-auto">
-                <button class="btn btn-ghost flex-1" onclick="dialPad('clear')">Clear</button>
-                <button class="btn btn-primary flex-1" id="call-btn" onclick="placeCall()">📞 Call</button>
+              <!-- Phone-style circular keypad: 4 rows Ã— 3 cols, last row = *,0,âŒ« ; then big green call button -->
+              <div id="dialer-keypad" class="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-[340px] mx-auto mb-4 select-none">
+                <button type="button" class="keypad-key" data-digit="1" aria-label="1">1<span class="sub">&nbsp;</span></button>
+                <button type="button" class="keypad-key" data-digit="2" aria-label="2">2<span class="sub">ABC</span></button>
+                <button type="button" class="keypad-key" data-digit="3" aria-label="3">3<span class="sub">DEF</span></button>
+                <button type="button" class="keypad-key" data-digit="4" aria-label="4">4<span class="sub">GHI</span></button>
+                <button type="button" class="keypad-key" data-digit="5" aria-label="5">5<span class="sub">JKL</span></button>
+                <button type="button" class="keypad-key" data-digit="6" aria-label="6">6<span class="sub">MNO</span></button>
+                <button type="button" class="keypad-key" data-digit="7" aria-label="7">7<span class="sub">PQRS</span></button>
+                <button type="button" class="keypad-key" data-digit="8" aria-label="8">8<span class="sub">TUV</span></button>
+                <button type="button" class="keypad-key" data-digit="9" aria-label="9">9<span class="sub">WXYZ</span></button>
+                <button type="button" class="keypad-key" data-digit="*" aria-label="star">*<span class="sub">&nbsp;</span></button>
+                <button type="button" class="keypad-key" data-digit="0" aria-label="0">0<span class="sub">+</span></button>
+                <button type="button" class="keypad-key" data-digit="#" aria-label="hash">#<span class="sub">&nbsp;</span></button>
+              </div>
+              <!-- Action row: clear Â· green call Â· backspace (iOS-style) -->
+              <div class="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-[340px] mx-auto items-center">
+                <button type="button" class="keypad-action keypad-back text-xs uppercase tracking-wider font-semibold" onclick="dialPad('clear')" aria-label="Clear number">clear</button>
+                <button type="button" class="keypad-action keypad-call text-3xl" id="call-btn" onclick="placeCall()" aria-label="Place call">ðŸ“ž</button>
+                <button type="button" class="keypad-action keypad-back text-2xl" id="backspace-btn" aria-label="Backspace">âŒ«</button>
               </div>
             </div>
 
@@ -371,21 +405,21 @@
               </div>
               <div class="grid grid-cols-3 gap-2 mb-2">
                 <button class="btn btn-ghost" id="mute-btn" onclick="toggleMute()">
-                  <span id="mute-icon">🎙️</span> <span id="mute-label">Mute</span>
+                  <span id="mute-icon">ðŸŽ™ï¸</span> <span id="mute-label">Mute</span>
                 </button>
                 <button class="btn btn-ghost" id="hold-btn" onclick="holdCall()">
-                  <span id="hold-icon">⏸️</span> <span id="hold-label">Hold</span>
+                  <span id="hold-icon">â¸ï¸</span> <span id="hold-label">Hold</span>
                 </button>
                 <button class="btn btn-ghost" id="keypad-btn" onclick="toggleKeypad()">
-                  ⌨️ Keypad
+                  âŒ¨ï¸ Keypad
                 </button>
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <button class="btn btn-ghost" id="transfer-btn" onclick="transferCall()">
-                  🔁 Transfer
+                  ðŸ” Transfer
                 </button>
                 <button class="btn btn-danger" id="hangup-btn" onclick="hangupCall()">
-                  📵 Hang up
+                  ðŸ“µ Hang up
                 </button>
               </div>
               <!-- DTMF keypad (hidden by default) -->
@@ -421,14 +455,14 @@
             <div class="panel p-5">
               <h3 class="font-semibold mb-3">Recent calls <span class="text-xs text-gray-500">(click to call back)</span></h3>
               <div id="dialer-recent" class="space-y-1 text-sm scroll-y" style="max-height: 280px;">
-                <p class="text-xs text-gray-500">Loading…</p>
+                <p class="text-xs text-gray-500">Loadingâ€¦</p>
               </div>
             </div>
 
             <div class="panel p-5">
               <h3 class="font-semibold mb-3">Telephony numbers</h3>
               <div id="dialer-numbers" class="space-y-1 text-sm">
-                <p class="text-xs text-gray-500">Loading…</p>
+                <p class="text-xs text-gray-500">Loadingâ€¦</p>
               </div>
             </div>
           </div>
@@ -442,10 +476,10 @@
           <div class="panel p-0 overflow-hidden flex flex-col">
             <div class="p-4 border-b border-gray-800 flex items-center justify-between">
               <h3 class="font-semibold">Threads</h3>
-              <button class="btn btn-ghost" onclick="loadThreads()">↻</button>
+              <button class="btn btn-ghost" onclick="loadThreads()">â†»</button>
             </div>
             <div id="threads-list" class="flex-1 overflow-y-auto">
-              <p class="p-4 text-xs text-gray-500">Loading…</p>
+              <p class="p-4 text-xs text-gray-500">Loadingâ€¦</p>
             </div>
           </div>
           <!-- Thread view -->
@@ -453,7 +487,7 @@
             <div class="p-4 border-b border-gray-800 flex items-center justify-between">
               <div>
                 <h3 class="font-semibold mono" id="thread-remote">Select a thread</h3>
-                <p class="text-xs text-gray-500" id="thread-meta">—</p>
+                <p class="text-xs text-gray-500" id="thread-meta">â€”</p>
               </div>
               <div class="flex items-center gap-2">
                 <select id="msg-from" class="text-xs py-1 px-2" style="width: auto;">
@@ -467,7 +501,7 @@
               <p class="text-sm text-gray-500 text-center mt-12">Pick a thread from the left, or send a new message below.</p>
             </div>
             <div class="p-3 border-t border-gray-800 flex gap-2">
-              <input id="msg-input" type="text" placeholder="Type a message…" class="flex-1" onkeydown="if(event.key==='Enter')sendSms()" />
+              <input id="msg-input" type="text" placeholder="Type a messageâ€¦" class="flex-1" onkeydown="if(event.key==='Enter')sendSms()" />
               <button class="btn btn-primary" onclick="sendSms()">Send</button>
             </div>
           </div>
@@ -479,7 +513,7 @@
         <div class="panel p-5">
           <div class="flex items-center justify-between mb-4">
             <h3 class="font-semibold">Call history <span class="text-xs text-gray-500">(click to call back)</span></h3>
-            <button class="btn btn-ghost" onclick="loadHistory()">↻ refresh</button>
+            <button class="btn btn-ghost" onclick="loadHistory()">â†» refresh</button>
           </div>
           <div class="flex gap-2 mb-3 flex-wrap" id="history-filters">
             <button class="filter-chip active" data-filter="all" onclick="filterHistory('all')">All</button>
@@ -490,7 +524,7 @@
           <div id="history-table-wrap" class="scroll-y" style="max-height: 600px;">
             <table>
               <thead><tr><th>When</th><th>From</th><th>To</th><th>Event</th><th></th></tr></thead>
-              <tbody id="history-table"><tr><td colspan="5" class="text-gray-500 text-center py-8">Loading…</td></tr></tbody>
+              <tbody id="history-table"><tr><td colspan="5" class="text-gray-500 text-center py-8">Loadingâ€¦</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -501,10 +535,10 @@
         <div class="panel p-5">
           <div class="flex items-center justify-between mb-4">
             <h3 class="font-semibold">Recent recordings</h3>
-            <button class="btn btn-ghost" onclick="loadRecordings()">↻ refresh</button>
+            <button class="btn btn-ghost" onclick="loadRecordings()">â†» refresh</button>
           </div>
           <div id="recordings-list" class="space-y-3 scroll-y" style="max-height: 600px;">
-            <p class="text-sm text-gray-500">Loading…</p>
+            <p class="text-sm text-gray-500">Loadingâ€¦</p>
           </div>
         </div>
       </section>
@@ -514,11 +548,11 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="panel p-5">
             <h3 class="font-semibold mb-3">Owned numbers</h3>
-            <div id="admin-numbers" class="space-y-2 text-sm">Loading…</div>
+            <div id="admin-numbers" class="space-y-2 text-sm">Loadingâ€¦</div>
           </div>
           <div class="panel p-5">
             <h3 class="font-semibold mb-3">AI agents <span class="text-xs text-gray-500">(20 of 36 curated)</span></h3>
-            <div id="admin-agents" class="space-y-2 text-sm scroll-y" style="max-height: 400px;">Loading…</div>
+            <div id="admin-agents" class="space-y-2 text-sm scroll-y" style="max-height: 400px;">Loadingâ€¦</div>
           </div>
         </div>
       </section>
@@ -532,26 +566,26 @@
       <div class="incoming-avatar" id="incoming-avatar">?</div>
       <p class="text-[10px] uppercase tracking-widest text-gray-500 mb-2">Incoming call</p>
       <h2 class="incoming-caller-name" id="incoming-name">Unknown caller</h2>
-      <p class="incoming-caller-num" id="incoming-number">—</p>
+      <p class="incoming-caller-num" id="incoming-number">â€”</p>
       <p class="text-xs text-gray-500 mt-2 mono" id="incoming-callid"></p>
       <div class="incoming-actions">
-        <button class="incoming-action-btn incoming-decline" onclick="declineIncomingCall()" title="Decline" aria-label="Decline">📵</button>
-        <button class="incoming-action-btn incoming-accept" onclick="acceptIncomingCall()" title="Accept" aria-label="Accept">📞</button>
+        <button class="incoming-action-btn incoming-decline" onclick="declineIncomingCall()" title="Decline" aria-label="Decline">ðŸ“µ</button>
+        <button class="incoming-action-btn incoming-accept" onclick="acceptIncomingCall()" title="Accept" aria-label="Accept">ðŸ“ž</button>
       </div>
     </div>
   </div>
 
-  <!-- PERSISTENT CALL BAR (v0.4.1) — always-visible strip on mobile when a call is pending or active -->
+  <!-- PERSISTENT CALL BAR (v0.4.2) â€” always-visible strip on mobile when a call is pending or active -->
   <div id="call-bar" class="call-bar hidden" role="region" aria-label="Active call controls">
     <div class="call-bar-pulse" id="call-bar-pulse"></div>
     <div class="call-bar-info">
       <div class="call-bar-label" id="call-bar-label">Incoming call</div>
-      <div class="call-bar-number" id="call-bar-number">—</div>
+      <div class="call-bar-number" id="call-bar-number">â€”</div>
     </div>
     <div class="call-bar-actions">
-      <button class="call-bar-btn call-bar-accept hidden" id="call-bar-accept" onclick="acceptIncomingCall()" title="Accept" aria-label="Accept call">📞</button>
-      <button class="call-bar-btn call-bar-decline" id="call-bar-decline" onclick="endOrDeclineCall()" title="End call" aria-label="Decline or end call">📵</button>
-      <button class="call-bar-btn call-bar-open hidden" id="call-bar-open" onclick="openActiveCallFromBar()" title="Open" aria-label="Open call details">⤴</button>
+      <button class="call-bar-btn call-bar-accept hidden" id="call-bar-accept" onclick="acceptIncomingCall()" title="Accept" aria-label="Accept call">ðŸ“ž</button>
+      <button class="call-bar-btn call-bar-decline" id="call-bar-decline" onclick="endOrDeclineCall()" title="End call" aria-label="Decline or end call">ðŸ“µ</button>
+      <button class="call-bar-btn call-bar-open hidden" id="call-bar-open" onclick="openActiveCallFromBar()" title="Open" aria-label="Open call details">â¤´</button>
     </div>
   </div>
 
@@ -566,13 +600,13 @@
     <div class="panel max-w-lg w-full p-6">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-lg font-bold">Settings</h3>
-        <button class="btn btn-ghost" onclick="closeSettings()">×</button>
+        <button class="btn btn-ghost" onclick="closeSettings()">Ã—</button>
       </div>
       <div class="space-y-4">
         <div>
           <label class="text-xs text-gray-400 mb-1 block">Telnyx WebRTC login (username)</label>
-          <input id="settings-login" type="text" placeholder="username from Telnyx Mission Control → Voice → WebRTC" />
-          <p class="text-xs text-gray-500 mt-1">Create at <a href="https://portal.telnyx.com" class="text-accent" style="color: var(--accent)">portal.telnyx.com</a> → Voice → SIP → WebRTC credentials.</p>
+          <input id="settings-login" type="text" placeholder="username from Telnyx Mission Control â†’ Voice â†’ WebRTC" />
+          <p class="text-xs text-gray-500 mt-1">Create at <a href="https://portal.telnyx.com" class="text-accent" style="color: var(--accent)">portal.telnyx.com</a> â†’ Voice â†’ SIP â†’ WebRTC credentials.</p>
         </div>
         <div>
           <label class="text-xs text-gray-400 mb-1 block">Telnyx WebRTC password</label>
@@ -606,8 +640,8 @@
     const API_PREFIX = "/api";
 
     // ============================================================
-    // FSM (Finite State Machine) — inspired by ominicontacto
-    // Simplified to 6 states: Initial → Connecting → Ready → Dialing → OnCall → OnHold → ReceivingCall
+    // FSM (Finite State Machine) â€” inspired by ominicontacto
+    // Simplified to 6 states: Initial â†’ Connecting â†’ Ready â†’ Dialing â†’ OnCall â†’ OnHold â†’ ReceivingCall
     // ============================================================
     const fsm = (() => {
       const transitions = {
@@ -648,7 +682,7 @@
     })();
 
     // ============================================================
-    // FSM LISTENERS — v0.3.0 side-effects
+    // FSM LISTENERS â€” v0.3.0 side-effects
     // (Declared before the WebRTC client so they're in scope for any state change.)
     // ============================================================
     function updateHoldLabel() {
@@ -657,7 +691,7 @@
       const icon = document.getElementById('hold-icon');
       const label = document.getElementById('hold-label');
       const onHold = fsm.state === 'OnHold';
-      if (icon) icon.textContent = onHold ? '▶️' : '⏸️';
+      if (icon) icon.textContent = onHold ? 'â–¶ï¸' : 'â¸ï¸';
       if (label) label.textContent = onHold ? 'Resume' : 'Hold';
     }
     function updateCallCardStyle() {
@@ -710,7 +744,7 @@
       updateInCallButtons();
       updateCallCardStyle();
 
-      // Persistent call bar (v0.4.1) — refresh on every FSM transition so it
+      // Persistent call bar (v0.4.2) â€” refresh on every FSM transition so it
       // stays in sync with the actual call state on mobile.
       try { updateCallBar(); } catch (e) { /* bar not yet in DOM */ }
     });
@@ -735,13 +769,13 @@
           dot.className = 'dot dot-off';
         }
         const labels = {
-          'Initial': 'Initializing…',
-          'Connecting': 'Connecting…',
+          'Initial': 'Initializingâ€¦',
+          'Connecting': 'Connectingâ€¦',
           'Ready': 'Ready',
-          'Dialing': 'Dialing…',
+          'Dialing': 'Dialingâ€¦',
           'OnCall': 'On call',
           'OnHold': 'On hold',
-          'ReceivingCall': 'Incoming…',
+          'ReceivingCall': 'Incomingâ€¦',
           'Disconnected': 'Disconnected',
         };
         text.textContent = labels[state] || state;
@@ -773,7 +807,7 @@
         this.stopTimer();
       },
 
-      // Call timer — starts on OnCall, pauses on OnHold, resets on Ready/hangup.
+      // Call timer â€” starts on OnCall, pauses on OnHold, resets on Ready/hangup.
       _timer: null,
       _startTime: null,
       _accumulated: 0,        // seconds accumulated before a hold
@@ -807,14 +841,14 @@
       },
 
       setMuted(muted) {
-        document.getElementById('mute-icon').textContent = muted ? '🔇' : '🎙️';
+        document.getElementById('mute-icon').textContent = muted ? 'ðŸ”‡' : 'ðŸŽ™ï¸';
         document.getElementById('mute-label').textContent = muted ? 'Unmute' : 'Mute';
         document.getElementById('mute-btn').classList.toggle('active', muted);
       },
     };
 
     // ============================================================
-    // v0.3.0 — AUDIO (Web Audio API, no external assets)
+    // v0.3.0 â€” AUDIO (Web Audio API, no external assets)
     // ============================================================
     const audio = (() => {
       let ctx = null;
@@ -862,7 +896,7 @@
         playTone(freqs[0], 0.12, 0.12);
         playTone(freqs[1], 0.12, 0.12);
       }
-      // Ringback (dialing): single 480Hz tone, two short beeps then silence — US style
+      // Ringback (dialing): single 480Hz tone, two short beeps then silence â€” US style
       function startRingback() {
         stopRingback();
         const cycle = () => {
@@ -879,7 +913,7 @@
       function stopRingback() {
         if (ringbackTimer) { clearTimeout(ringbackTimer); ringbackTimer = null; }
       }
-      // Ringtone (incoming): dual 440/480Hz, 1s on / 2s off — distinct from ringback
+      // Ringtone (incoming): dual 440/480Hz, 1s on / 2s off â€” distinct from ringback
       function startRingtone() {
         stopRingtone();
         const cycle = () => {
@@ -899,7 +933,7 @@
     })();
 
     // ============================================================
-    // v0.3.0 — TOAST
+    // v0.3.0 â€” TOAST
     // ============================================================
     function toast(message, type = 'info', ttl = 2800) {
       let wrap = document.getElementById('toast-wrap');
@@ -917,7 +951,7 @@
     }
 
     // ============================================================
-    // v0.3.0 — EMPTY STATE HELPER
+    // v0.3.0 â€” EMPTY STATE HELPER
     // ============================================================
     function emptyState(icon, title, subtitle = '') {
       return `<div class="empty-state">
@@ -928,7 +962,7 @@
     }
 
     // ============================================================
-    // v0.3.0 — TAB BADGES (Messages / History / Recordings)
+    // v0.3.0 â€” TAB BADGES (Messages / History / Recordings)
     // ============================================================
     let unreadSmsCount = 0;
     let newRecordingsCount = 0;
@@ -948,7 +982,7 @@
     function updateRecordingsBadge() { setTabBadge('recordings-badge', newRecordingsCount, true); }
 
     // ============================================================
-    // v0.3.0 — MISSED CALL TRACKING
+    // v0.3.0 â€” MISSED CALL TRACKING
     // ============================================================
     let missedCallCount = 0;
     let missedCallNumbers = new Set();
@@ -1068,7 +1102,7 @@
     }
 
     async function initTelnyx() {
-      setSdkDebug('waiting…', '#888');
+      setSdkDebug('waitingâ€¦', '#888');
       const TelnyxRTC = await waitForTelnyxSDK();
       if (!TelnyxRTC) {
         // Diagnose what's actually on window so we can see why the SDK didn't register
@@ -1094,7 +1128,7 @@
         return false;
       }
       try {
-        setSdkDebug('connecting…', '#fa3');
+        setSdkDebug('connectingâ€¦', '#fa3');
         // FSM: Initial -> Connecting (use 'connect', not 'reconnect' which only fires from Disconnected)
         fsm.fire('connect');
         view.setStatus(fsm.state);
@@ -1106,7 +1140,7 @@
         telnyxClient.on('telnyx.ready', () => {
           console.log('Telnyx: ready');
           fsm.fire('connectOk');
-          setSdkDebug('ready ✓', '#0f8');
+          setSdkDebug('ready âœ“', '#0f8');
           view.setStatus(fsm.state);
         });
         telnyxClient.on('telnyx.error', (err) => {
@@ -1146,14 +1180,14 @@
         const state = call.state;
         // Telnyx Verto states: new, trying, ringing, early, active, confirmed, terminated/destroy/hangup
         if (state === 'ringing') {
-          // Inbound ringing — only fire if we're not already in a call
+          // Inbound ringing â€” only fire if we're not already in a call
           if (fsm.state === 'Ready' || fsm.state === 'Initial') {
             activeCall = call;
             fsm.fire('incomingCall');
             view.setStatus(fsm.state);
             const remote = call.options?.remoteCallerNumber || call.parameters?.From || 'Unknown';
             view.showCallCard(remote, 'Incoming call');
-            view.setCallState('Ringing — answer in another tab or wait');
+            view.setCallState('Ringing â€” answer in another tab or wait');
           }
         } else if (state === 'active' || state === 'confirmed' || state === 'early') {
           // Call answered. Only fire from Dialing or ReceivingCall (FSM allows remoteAnswer from those).
@@ -1185,14 +1219,14 @@
       if (!number) { alert('Enter a number'); return; }
       const caller = document.getElementById('caller-number').value;
       if (!telnyxClient) {
-        alert('Telnyx WebRTC not connected. Click Settings → add credentials → Test connection.');
+        alert('Telnyx WebRTC not connected. Click Settings â†’ add credentials â†’ Test connection.');
         return;
       }
       try {
         fsm.fire('dial');
         view.setStatus(fsm.state);
         view.showCallCard(number, 'Outgoing call');
-        view.setCallState('Dialing…');
+        view.setCallState('Dialingâ€¦');
         telnyxClient.newCall({
           destinationNumber: number,
           callerNumber: caller,
@@ -1263,13 +1297,13 @@
     function transferCall() {
       if (!activeCall) { toast('No active call to transfer', 'error'); return; }
       if (!telnyxClient || typeof telnyxClient.newCall !== 'function') {
-        toast('Transfer unavailable — SDK not connected', 'error');
+        toast('Transfer unavailable â€” SDK not connected', 'error');
         return;
       }
       const dest = prompt('Transfer to (number):', '');
       if (dest == null) return;            // cancelled
       const number = dest.trim();
-      if (!number) { toast('Transfer cancelled — empty number', 'error'); return; }
+      if (!number) { toast('Transfer cancelled â€” empty number', 'error'); return; }
       try {
         const callId = activeCall.id || activeCall.callId;
         // Attended transfer: new call attached to the active one. If the SDK
@@ -1305,15 +1339,94 @@
     function dialPad(ch) {
       // Prime audio on first interaction so browsers allow playback later
       audio.prime();
-      if (ch === 'clear') { document.getElementById('number-input').value = ''; return; }
       const input = document.getElementById('number-input');
+      if (ch === 'clear') { if (input) input.value = ''; return; }
+      if (!input) return;
       input.value = (input.value || '') + ch;
       // Play the DTMF tone for every keypress, even pre-call (so the user
-      // gets audible feedback while dialing — like a real phone).
+      // gets audible feedback while dialing â€” like a real phone).
       try { audio.playDTMF(ch); } catch (e) { /* ignore */ }
       // If on a call, also send as in-band DTMF
       if (fsm.state === 'OnCall') sendDTMF(ch);
     }
+
+    // v0.4.2: Backspace (long-press to clear)
+    let backspaceTimer = null;
+    let backspaceInterval = null;
+    function backspaceOnce() {
+      const input = document.getElementById('number-input');
+      if (!input) return;
+      const v = input.value || '';
+      if (v.length > 0) input.value = v.slice(0, -1);
+      try { audio.playDTMF('*'); } catch (e) {}
+    }
+    function startBackspace() {
+      backspaceOnce();
+      backspaceTimer = setTimeout(() => {
+        backspaceInterval = setInterval(backspaceOnce, 70);
+      }, 450);
+    }
+    function endBackspace() {
+      if (backspaceTimer)  { clearTimeout(backspaceTimer);  backspaceTimer  = null; }
+      if (backspaceInterval) { clearInterval(backspaceInterval); backspaceInterval = null; }
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      const bs = document.getElementById('backspace-btn');
+      if (bs) {
+        bs.addEventListener('mousedown',  startBackspace);
+        bs.addEventListener('mouseup',    endBackspace);
+        bs.addEventListener('mouseleave', endBackspace);
+        bs.addEventListener('touchstart', (e) => { e.preventDefault(); startBackspace(); }, { passive: false });
+        bs.addEventListener('touchend',    endBackspace);
+        bs.addEventListener('touchcancel', endBackspace);
+      }
+    });
+
+    // v0.4.2: Mobile caller cycling (compact "From" pill on small screens)
+    const CALLER_OPTIONS = [
+      { value: '+15078731084', label: '+1 507 873 1084' },
+      { value: '+13079999692', label: '+1 307 999 9692' },
+      { value: '+13204280793', label: '+1 320 428 0793' },
+      { value: '+18444618814', label: '+1 844 461 8814' },
+    ];
+    function cycleCallerOnMobile() {
+      const sel = document.getElementById('caller-number');
+      if (!sel) return;
+      const cur = sel.value;
+      const idx = CALLER_OPTIONS.findIndex(o => o.value === cur);
+      const next = CALLER_OPTIONS[(idx + 1) % CALLER_OPTIONS.length];
+      sel.value = next.value;
+      updateCallerPill();
+      try { audio.playDTMF('*'); } catch (e) {}
+    }
+    function updateCallerPill() {
+      const sel = document.getElementById('caller-number');
+      const pillNum = document.getElementById('caller-pill-num');
+      if (sel && pillNum) {
+        const found = CALLER_OPTIONS.find(o => o.value === sel.value);
+        pillNum.textContent = found ? found.label : sel.value;
+      }
+    }
+    document.addEventListener('DOMContentLoaded', updateCallerPill);
+
+    // v0.4.2: Wire the new <button data-digit="N"> keys (event delegation)
+    document.addEventListener('DOMContentLoaded', () => {
+      const pad = document.getElementById('dialer-keypad');
+      if (!pad) return;
+      pad.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-digit]');
+        if (!btn) return;
+        const digit = btn.dataset.digit;
+        // Visual press feedback (key turns accent color briefly)
+        btn.classList.add('pressed');
+        setTimeout(() => btn.classList.remove('pressed'), 110);
+        dialPad(digit);
+      });
+      // Sync the hidden select when the desktop selector changes (so caller
+      // is consistent regardless of which UI surface is used)
+      const sel = document.getElementById('caller-number');
+      if (sel) sel.addEventListener('change', updateCallerPill);
+    });
 
     // ============================================================
     // AGENT STATUS
@@ -1344,7 +1457,7 @@
       if (name === 'messages') loadThreads();
       if (name === 'history') {
         loadHistory();
-        // Mark missed as "seen" — badge clears until next missed call.
+        // Mark missed as "seen" â€” badge clears until next missed call.
         clearMissed();
       }
       if (name === 'recordings') {
@@ -1366,14 +1479,14 @@
     let historyFilter = 'all';
     async function loadHistory() {
       const tbody = document.getElementById('history-table');
-      tbody.innerHTML = `<tr><td colspan="5" class="text-gray-500 text-center py-8">${emptyState('📋', 'Loading history…')}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" class="text-gray-500 text-center py-8">${emptyState('ðŸ“‹', 'Loading historyâ€¦')}</td></tr>`;
       try {
         const r = await fetch(`${API_BASE}${API_PREFIX}/calls/recent?limit=50`);
         const d = await r.json();
         historyEvents = d.events || [];
         renderHistory();
       } catch (e) {
-        tbody.innerHTML = `<tr><td colspan="5">${emptyState('⚠️', 'Failed to load history', e.message)}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5">${emptyState('âš ï¸', 'Failed to load history', e.message)}</td></tr>`;
       }
     }
     function filterHistory(filter) {
@@ -1416,18 +1529,18 @@
         return true;
       });
       if (historyEvents.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5">${emptyState('📋', 'No recent calls', 'Call history will appear here')}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5">${emptyState('ðŸ“‹', 'No recent calls', 'Call history will appear here')}</td></tr>`;
         return;
       }
       if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5">${emptyState('🔎', 'No matches', 'Try a different filter')}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5">${emptyState('ðŸ”Ž', 'No matches', 'Try a different filter')}</td></tr>`;
         return;
       }
       tbody.innerHTML = filtered.map(e => {
         const when = timeAgo(e.occurred_at || e.timestamp || e.created_at);
-        const from = e.from_number || e.from || '—';
-        const to = e.to_number || e.to || '—';
-        const ev = e.event_type || e.event || '—';
+        const from = e.from_number || e.from || 'â€”';
+        const to = e.to_number || e.to || 'â€”';
+        const ev = e.event_type || e.event || 'â€”';
         const missed = isMissedEvent(e);
         const cls = missed ? 'row-missed' : '';
         const evPill = missed
@@ -1439,7 +1552,7 @@
           <td class="mono text-xs">${escapeHtml(to)}</td>
           <td class="text-xs">${evPill}</td>
           <td class="text-right">
-            <button class="btn btn-ghost text-xs py-1 px-2" onclick="clickToCall('${escapeHtml(to === '—' ? from : to)}')">Call</button>
+            <button class="btn btn-ghost text-xs py-1 px-2" onclick="clickToCall('${escapeHtml(to === 'â€”' ? from : to)}')">Call</button>
           </td>
         </tr>`;
       }).join('');
@@ -1459,7 +1572,7 @@
 
     async function loadThreads() {
       const list = document.getElementById('threads-list');
-      list.innerHTML = emptyState('💬', 'Loading threads…');
+      list.innerHTML = emptyState('ðŸ’¬', 'Loading threadsâ€¦');
       try {
         const r = await fetch(`${API_BASE}${API_PREFIX}/messages/threads?limit=30`);
         const d = await r.json();
@@ -1468,7 +1581,7 @@
         unreadSmsCount = threads.reduce((s, t) => s + (t.unread_count || 0), 0);
         updateMessagesBadge();
         if (threads.length === 0) {
-          list.innerHTML = emptyState('💬', 'No conversations yet', 'Start a conversation by sending a message');
+          list.innerHTML = emptyState('ðŸ’¬', 'No conversations yet', 'Start a conversation by sending a message');
           return;
         }
         list.innerHTML = threads.map(t => {
@@ -1483,15 +1596,15 @@
           </div>`;
         }).join('');
       } catch (e) {
-        list.innerHTML = emptyState('⚠️', 'Failed to load threads', e.message);
+        list.innerHTML = emptyState('âš ï¸', 'Failed to load threads', e.message);
       }
     }
 
     async function selectThread(remote) {
       activeThread = remote;
       document.getElementById('thread-remote').textContent = remote;
-      document.getElementById('thread-meta').textContent = 'Loading…';
-      document.getElementById('thread-messages').innerHTML = emptyState('💬', 'Loading messages…');
+      document.getElementById('thread-meta').textContent = 'Loadingâ€¦';
+      document.getElementById('thread-messages').innerHTML = emptyState('ðŸ’¬', 'Loading messagesâ€¦');
       loadThreads();  // refresh active state + recount unread
       try {
         const r = await fetch(`${API_BASE}${API_PREFIX}/messages/recent?limit=100`);
@@ -1503,14 +1616,14 @@
         messagesCache = all;
         renderThread();
       } catch (e) {
-        document.getElementById('thread-messages').innerHTML = emptyState('⚠️', 'Failed to load messages', e.message);
+        document.getElementById('thread-messages').innerHTML = emptyState('âš ï¸', 'Failed to load messages', e.message);
       }
     }
 
     function renderThread() {
       const wrap = document.getElementById('thread-messages');
       if (messagesCache.length === 0) {
-        wrap.innerHTML = emptyState('💬', 'No messages in this thread yet', 'Send a message below to start the conversation');
+        wrap.innerHTML = emptyState('ðŸ’¬', 'No messages in this thread yet', 'Send a message below to start the conversation');
         document.getElementById('thread-meta').textContent = '0 messages';
         return;
       }
@@ -1555,13 +1668,13 @@
     let lastRecordingsVisit = parseInt(localStorage.getItem('w3j_last_recordings_visit') || '0', 10) || 0;
     async function loadRecordings() {
       const list = document.getElementById('recordings-list');
-      list.innerHTML = emptyState('🎙️', 'Loading recordings…');
+      list.innerHTML = emptyState('ðŸŽ™ï¸', 'Loading recordingsâ€¦');
       try {
         const r = await fetch(`${API_BASE}${API_PREFIX}/recordings?limit=20`);
         const d = await r.json();
         const recs = d.recordings || [];
         if (recs.length === 0) {
-          list.innerHTML = emptyState('🎙️', 'No recordings yet', 'Recorded calls will appear here automatically');
+          list.innerHTML = emptyState('ðŸŽ™ï¸', 'No recordings yet', 'Recorded calls will appear here automatically');
           newRecordingsCount = 0;
           updateRecordingsBadge();
           return;
@@ -1571,7 +1684,7 @@
           return `<div class="panel-2 p-4">
             <div class="flex items-start justify-between mb-2">
               <div>
-                <p class="text-sm font-semibold mono">${dur} · ${timeAgo(r.created_at)}</p>
+                <p class="text-sm font-semibold mono">${dur} Â· ${timeAgo(r.created_at)}</p>
                 <p class="text-xs text-gray-500 mono">leg ${(r.call_leg_id || '').substring(0, 8)}</p>
               </div>
               <span class="pill" style="background: rgba(255, 77, 109, 0.2); color: var(--danger);">REC</span>
@@ -1600,7 +1713,7 @@
         }
         updateRecordingsBadge();
       } catch (e) {
-        list.innerHTML = emptyState('⚠️', 'Failed to load recordings', e.message);
+        list.innerHTML = emptyState('âš ï¸', 'Failed to load recordings', e.message);
       }
     }
 
@@ -1619,24 +1732,24 @@
           ? nums.map(n => `
             <div class="panel-2 p-3">
               <p class="font-mono text-sm">${escapeHtml(n.phone_number)}</p>
-              <p class="text-xs text-gray-500">${escapeHtml(n.connection_name || '—')} · ${escapeHtml(n.country_code || '—')}</p>
+              <p class="text-xs text-gray-500">${escapeHtml(n.connection_name || 'â€”')} Â· ${escapeHtml(n.country_code || 'â€”')}</p>
             </div>`).join('')
-          : emptyState('📞', 'No numbers provisioned', 'Buy a number in Telnyx Mission Control to get started');
+          : emptyState('ðŸ“ž', 'No numbers provisioned', 'Buy a number in Telnyx Mission Control to get started');
         // Agents
         const ags = d.agents || [];
         agentsEl.innerHTML = ags.length
           ? ags.map(a => `
             <div class="panel-2 p-3">
               <p class="text-sm font-semibold">${escapeHtml(a.name)}</p>
-              <p class="text-xs text-gray-500 mono">${escapeHtml(a.model || '—')}</p>
+              <p class="text-xs text-gray-500 mono">${escapeHtml(a.model || 'â€”')}</p>
             </div>`).join('')
-          : emptyState('🤖', 'No AI agents', 'Provision an agent to start automating calls');
+          : emptyState('ðŸ¤–', 'No AI agents', 'Provision an agent to start automating calls');
         // Balance in header
         if (d.balance && d.balance.balance != null) {
           document.getElementById('header-balance').textContent = `$${d.balance.balance} ${d.balance.currency || 'USD'}`;
         }
       } catch (e) {
-        numbersEl.innerHTML = emptyState('⚠️', 'Failed to load admin', e.message);
+        numbersEl.innerHTML = emptyState('âš ï¸', 'Failed to load admin', e.message);
         agentsEl.innerHTML = '';
       }
     }
@@ -1664,7 +1777,7 @@
               <span class="font-mono text-xs">${r.num}</span>
               <span class="text-xs text-gray-500">${timeAgo(r.when)}</span>
             </div>`).join('')
-          : emptyState('🕘', 'No recent calls', 'Calls you make or receive will appear here');
+          : emptyState('ðŸ•˜', 'No recent calls', 'Calls you make or receive will appear here');
 
         // Numbers
         const r2 = await fetch(`${API_BASE}${API_PREFIX}/numbers`);
@@ -1676,7 +1789,7 @@
               <span class="font-mono text-xs">${n.phone_number}</span>
               <span class="text-xs text-gray-500">${n.connection_name || ''}</span>
             </div>`).join('')
-          : emptyState('📞', 'No numbers', 'Provision a number in Telnyx to enable outbound calls');
+          : emptyState('ðŸ“ž', 'No numbers', 'Provision a number in Telnyx to enable outbound calls');
       } catch (e) { /* soft fail */ }
     }
 
@@ -1684,8 +1797,8 @@
     // UTILS
     // ============================================================
     function timeAgo(iso) {
-      if (!iso) return '—';
-      const d = new Date(iso); if (isNaN(d)) return '—';
+      if (!iso) return 'â€”';
+      const d = new Date(iso); if (isNaN(d)) return 'â€”';
       const diff = Math.floor((Date.now() - d.getTime()) / 1000);
       if (diff < 60) return `${diff}s ago`;
       if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
@@ -1693,7 +1806,7 @@
       return `${Math.floor(diff/86400)}d ago`;
     }
     function formatDuration(secs) {
-      if (!secs && secs !== 0) return '—';
+      if (!secs && secs !== 0) return 'â€”';
       const m = Math.floor(secs / 60);
       const s = Math.floor(secs % 60);
       return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
@@ -1714,7 +1827,7 @@
       updateHistoryBadge();
       loadDialerRecents();
       loadAdmin();
-      // Background badge population — load threads + recordings silently so
+      // Background badge population â€” load threads + recordings silently so
       // the tab badges reflect unread/new counts without forcing a tab visit.
       loadThreads();
       loadRecordings();
@@ -1745,13 +1858,13 @@
           // Give SDK a moment to load
           setTimeout(() => {
             initTelnyx();
-            console.log('Auto-connecting to Telnyx WebRTC…');
+            console.log('Auto-connecting to Telnyx WebRTCâ€¦');
           }, 500);
         } else {
           // Show a non-blocking hint
           const pill = document.getElementById('status-pill');
           if (pill) {
-            pill.title = 'No server-side WebRTC credentials — open Settings to add manually';
+            pill.title = 'No server-side WebRTC credentials â€” open Settings to add manually';
           }
         }
       });
@@ -1772,7 +1885,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ user, password: pw })
         });
-      } catch (e) { /* soft fail — mock auth */ }
+      } catch (e) { /* soft fail â€” mock auth */ }
       localStorage.setItem('w3j_session_token', 'mock');
       document.getElementById('user-label').textContent = user;
       showPhone();
@@ -1799,7 +1912,7 @@
     function wsUrl() {
       // ws:// for http://localhost, wss:// for everything else.
       // Query param session_token matches the localStorage key the softphone
-      // already uses for the (mock) auth — same identifier, same tab.
+      // already uses for the (mock) auth â€” same identifier, same tab.
       const proto = API_BASE.startsWith('https://') ? 'wss' : 'ws';
       const base = API_BASE.replace(/^https?:\/\//, '');
       const token = localStorage.getItem('w3j_session_token') || 'anon';
@@ -1822,7 +1935,7 @@
       if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
         return;
       }
-      setWsStatus('connecting', 'ws:…');
+      setWsStatus('connecting', 'ws:â€¦');
       try {
         ws = new WebSocket(wsUrl());
       } catch (e) {
@@ -1870,14 +1983,14 @@
       setWsStatus('off', 'ws:off');
     }
 
-    // ───── Toast notifications ─────
+    // â”€â”€â”€â”€â”€ Toast notifications â”€â”€â”€â”€â”€
     function showToast({ title, message, kind, icon, durationMs }) {
       const stack = document.getElementById('toast-stack');
       if (!stack) return;
       const el = document.createElement('div');
       el.className = 'toast toast-' + (kind || 'info');
       el.innerHTML = `
-        <div class="toast-icon">${icon || '🔔'}</div>
+        <div class="toast-icon">${icon || 'ðŸ””'}</div>
         <div class="toast-body">
           <p class="toast-title">${escapeHtml(title || '')}</p>
           <p class="toast-msg">${escapeHtml(message || '')}</p>
@@ -1893,7 +2006,7 @@
       }, ms);
     }
 
-    // ───── Ringtone (Web Audio API) ─────
+    // â”€â”€â”€â”€â”€ Ringtone (Web Audio API) â”€â”€â”€â”€â”€
     let _ringCtx = null;
     let _ringTimer = null;
     function startRingtone() {
@@ -1927,7 +2040,7 @@
       if (_ringTimer) { clearInterval(_ringTimer); _ringTimer = null; }
     }
 
-    // ───── Incoming call modal ─────
+    // â”€â”€â”€â”€â”€ Incoming call modal â”€â”€â”€â”€â”€
     function showIncomingModal(data) {
       pendingIncomingCall = data;
       const modal = document.getElementById('incoming-modal');
@@ -1944,7 +2057,7 @@
       avatar.textContent = (num || '?').toString().replace(/[^0-9]/g, '').slice(-1) || '+';
       modal.classList.remove('hidden');
       startRingtone();
-      // v0.4.1: also raise the persistent mobile-friendly call bar
+      // v0.4.2: also raise the persistent mobile-friendly call bar
       try { updateCallBar(); } catch (e) {}
     }
     function hideIncomingModal() {
@@ -1953,7 +2066,7 @@
       pendingIncomingCall = null;
       pendingAccept = false;
       stopRingtone();
-      // v0.4.1: also lower the persistent call bar (will re-raise if the
+      // v0.4.2: also lower the persistent call bar (will re-raise if the
       // FSM is still in ReceivingCall or OnCall)
       try { updateCallBar(); } catch (e) {}
     }
@@ -1975,23 +2088,23 @@
         view.setCallState('Answered');
         hideIncomingModal();
         showToast({
-          kind: 'info', icon: '📞',
+          kind: 'info', icon: 'ðŸ“ž',
           title: 'Call accepted',
           message: 'Connected to ' + (pendingIncomingCall.from || 'caller'),
           durationMs: 3000,
         });
-        // v0.4.1: refresh the persistent call bar to show "On call"
+        // v0.4.2: refresh the persistent call bar to show "On call"
         try { updateCallBar(); } catch (e) {}
       } else {
         pendingAccept = true;
         // The modal stays open until the SDK call arrives. Give it a
-        // 10s grace window — if the call never shows, close.
+        // 10s grace window â€” if the call never shows, close.
         setTimeout(() => {
           if (pendingAccept && pendingIncomingCall) {
             pendingAccept = false;
             hideIncomingModal();
             showToast({
-              kind: 'missed', icon: '⚠️',
+              kind: 'missed', icon: 'âš ï¸',
               title: 'No call to answer',
               message: 'The browser WebRTC client did not receive this call. ' +
                        'It may have been answered on another device.',
@@ -2003,10 +2116,10 @@
     }
     function declineIncomingCall() {
       stopRingtone();
-      // 1) ALWAYS tell Telnyx to reject the call on its side — this is the
+      // 1) ALWAYS tell Telnyx to reject the call on its side â€” this is the
       //    only thing that actually closes the WebRTC media path. The local
       //    `activeCall` is null for inbound until the user accepts, so the
-      //    browser SDK has no object to hangup — we MUST hit the server.
+      //    browser SDK has no object to hangup â€” we MUST hit the server.
       const cci = pendingIncomingCall && pendingIncomingCall.call_control_id;
       if (cci) {
         fetch(`https://bk-jr-api.aixlabs.fun/api/calls/${encodeURIComponent(cci)}/reject`, {
@@ -2025,14 +2138,14 @@
       view.setStatus(fsm.state);
       hideIncomingModal();
       hideCallBar();
-      showToast({ kind: 'info', icon: '📵', title: 'Call declined', durationMs: 2000 });
+      showToast({ kind: 'info', icon: 'ðŸ“µ', title: 'Call declined', durationMs: 2000 });
     }
 
     // Used by the persistent call bar's "end" button. Same as decline for
     // an unanswered inbound, or sends a hangup for an active one.
     function endOrDeclineCall() {
       if (activeCall) {
-        // Active call — hang up via SDK + server
+        // Active call â€” hang up via SDK + server
         const cci = activeCall.parameters?.CallControlId || activeCall.id;
         if (cci) {
           fetch(`https://bk-jr-api.aixlabs.fun/api/calls/${encodeURIComponent(cci)}/hangup`, {
@@ -2058,7 +2171,7 @@
       if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // ───── Persistent call bar (v0.4.1) ─────
+    // â”€â”€â”€â”€â”€ Persistent call bar (v0.4.2) â”€â”€â”€â”€â”€
     function showCallBar(opts) {
       const bar = document.getElementById('call-bar');
       if (!bar) return;
@@ -2068,7 +2181,7 @@
       const declineBtn = document.getElementById('call-bar-decline');
       const openBtn = document.getElementById('call-bar-open');
       if (labelEl) labelEl.textContent = opts.label || 'Call';
-      if (numEl) numEl.textContent = opts.number || '—';
+      if (numEl) numEl.textContent = opts.number || 'â€”';
       // Show the right buttons for the state
       if (acceptBtn) acceptBtn.classList.toggle('hidden', !opts.showAccept);
       if (openBtn)   openBtn.classList.toggle('hidden',   !opts.showOpen);
@@ -2091,7 +2204,7 @@
       } else if (fsm.state === 'OnCall' || fsm.state === 'OnHold' || fsm.state === 'Dialing') {
         const num = (activeCall && (activeCall.options?.remoteCallerNumber || activeCall.parameters?.From)) || pendingIncomingCall?.from || 'Active call';
         showCallBar({
-          label: fsm.state === 'Dialing' ? 'Dialing…' : 'On call',
+          label: fsm.state === 'Dialing' ? 'Dialingâ€¦' : 'On call',
           number: num,
           showAccept: false, showDecline: true, showOpen: true,
           declineTitle: 'End call',
@@ -2101,18 +2214,18 @@
       }
     }
 
-    // ───── WS event dispatch ─────
+    // â”€â”€â”€â”€â”€ WS event dispatch â”€â”€â”€â”€â”€
     function handleWsEvent(msg) {
       const t = msg.type;
       const d = msg.data || {};
       if (t === 'ws.hello') {
-        // Server handshake — nothing to render, but log for diagnostics
+        // Server handshake â€” nothing to render, but log for diagnostics
         console.log('WS hello:', d);
         return;
       }
       if (t === 'call.incoming') {
         // Show the modal. If a call is already being handled, update it
-        // with the new caller — the first call was probably abandoned
+        // with the new caller â€” the first call was probably abandoned
         // while the user wasn't watching.
         showIncomingModal(d);
         return;
@@ -2124,9 +2237,9 @@
           hideIncomingModal();
         }
         showToast({
-          kind: 'info', icon: '✅',
+          kind: 'info', icon: 'âœ…',
           title: 'Call answered',
-          message: (d.from || '—') + ' answered on another device',
+          message: (d.from || 'â€”') + ' answered on another device',
           durationMs: 3500,
         });
         return;
@@ -2137,7 +2250,7 @@
         if (pendingIncomingCall && d.call_control_id === pendingIncomingCall.call_control_id) {
           hideIncomingModal();
           showToast({
-            kind: 'missed', icon: '📵',
+            kind: 'missed', icon: 'ðŸ“µ',
             title: 'Missed call',
             message: (d.from || 'Unknown') + ' hung up before you answered',
             durationMs: 7000,
@@ -2149,9 +2262,9 @@
       }
       if (t === 'recording.ready') {
         showToast({
-          kind: 'recording', icon: '🎙️',
+          kind: 'recording', icon: 'ðŸŽ™ï¸',
           title: 'Recording ready',
-          message: d.recording_id ? `${d.duration_secs || 0}s · ${d.recording_id.slice(0, 8)}…` : 'Tap Recordings to listen',
+          message: d.recording_id ? `${d.duration_secs || 0}s Â· ${d.recording_id.slice(0, 8)}â€¦` : 'Tap Recordings to listen',
           durationMs: 5000,
         });
         // Refresh recording tab if it's open.
@@ -2160,7 +2273,7 @@
       }
       if (t === 'sms.received') {
         showToast({
-          kind: 'sms', icon: '💬',
+          kind: 'sms', icon: 'ðŸ’¬',
           title: 'New SMS from ' + (d.from || 'unknown'),
           message: (d.text || '(no preview)').substring(0, 100),
           durationMs: 6000,
@@ -2173,7 +2286,7 @@
     }
 
     // Hook the SDK notification handler so that if a ringing call arrives
-    // BEFORE the WS event (or instead of it — e.g. local-network mode),
+    // BEFORE the WS event (or instead of it â€” e.g. local-network mode),
     // we still answer if the user already clicked Accept.
     const _origHandleTelnyxNotification = handleTelnyxNotification;
     handleTelnyxNotification = function(n) {
@@ -2191,12 +2304,12 @@
           view.showCallCard(remote, 'Incoming call');
           view.setCallState('Answered');
           hideIncomingModal();
-          showToast({ kind: 'info', icon: '📞', title: 'Call accepted', message: 'Connected to ' + remote, durationMs: 3000 });
+          showToast({ kind: 'info', icon: 'ðŸ“ž', title: 'Call accepted', message: 'Connected to ' + remote, durationMs: 3000 });
           return;
         }
         // If we got a ringing notification without a pending modal, show one
         // (covers the case where Telnyx's SIP INVITE arrives before the
-        // server-side webhook does — usually only happens on self-loopback).
+        // server-side webhook does â€” usually only happens on self-loopback).
         if (call.state === 'ringing' && !pendingIncomingCall) {
           const remote = call.options?.remoteCallerNumber || call.parameters?.From || 'Unknown';
           showIncomingModal({ from: remote, call_control_id: call.parameters?.CallUUID || call.id || null });
@@ -2232,7 +2345,7 @@
        role="status" aria-live="polite">
     <div class="flex-1 min-w-0">
       <p class="text-sm font-semibold text-slate-100">Install agentops</p>
-      <p class="text-xs text-slate-400 mt-0.5">Add the softphone to your home screen for one-tap calling — no browser bar.</p>
+      <p class="text-xs text-slate-400 mt-0.5">Add the softphone to your home screen for one-tap calling â€” no browser bar.</p>
     </div>
     <button id="pwa-install-dismiss"
             type="button"
@@ -2248,7 +2361,7 @@
   <script>
     (function () {
       'use strict';
-      // 1. Service worker — registers /sw.js at root scope so it can
+      // 1. Service worker â€” registers /sw.js at root scope so it can
       //    intercept fetches across the whole origin.
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function () {
@@ -2258,7 +2371,7 @@
         });
       }
 
-      // 2. Install prompt — show a custom banner on first visit, hide forever
+      // 2. Install prompt â€” show a custom banner on first visit, hide forever
       //    once dismissed (per origin, per device, in localStorage).
       var banner = document.getElementById('pwa-install-banner');
       var dismissBtn = document.getElementById('pwa-install-dismiss');
@@ -2288,7 +2401,7 @@
 
       installBtn.addEventListener('click', function () {
         if (!deferredPrompt) {
-          // Browser didn't surface a prompt (e.g. already installed) —
+          // Browser didn't surface a prompt (e.g. already installed) â€”
           // just hide the banner without persisting dismissal in case a
           // future trigger fires.
           banner.classList.add('hidden');

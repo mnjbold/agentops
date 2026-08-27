@@ -127,6 +127,7 @@
             <p class="text-[10px] text-gray-500 mono">v0.2.4 · <span id="user-label">agent</span></p>
           </div>
           <span class="ml-3 pill pill-on" id="status-pill"><span class="dot dot-on" id="status-dot"></span> <span id="status-text">Ready</span></span>
+          <span id="sdk-debug" class="ml-2 text-[10px] mono text-gray-500" title="WebRTC SDK diagnostic">sdk:…</span>
         </div>
         <div class="flex items-center gap-3">
           <div class="text-right">
@@ -585,6 +586,15 @@
       return window.TelnyxWebRTC || window.Telnyx || null;
     }
 
+    // Surface SDK state to the visible UI so we can debug without devtools.
+    function setSdkDebug(msg, color) {
+      const el = document.getElementById('sdk-debug');
+      if (el) {
+        el.textContent = 'sdk:' + msg;
+        if (color) el.style.color = color;
+      }
+    }
+
     // Wait for the bundle to register. Resolves with the SDK or null on timeout.
     function waitForTelnyxSDK(timeoutMs = 5000) {
       return new Promise(resolve => {
@@ -600,11 +610,16 @@
     }
 
     async function initTelnyx() {
+      setSdkDebug('waiting…', '#888');
       const TelnyxSDK = await waitForTelnyxSDK();
       if (!TelnyxSDK || !TelnyxSDK.Client) {
         // Diagnose what's actually on window so we can see why the SDK didn't register
         const candidates = Object.keys(window).filter(k => /telnyx|webrtc|sip/i.test(k));
         const bundleEntry = (performance.getEntriesByName && performance.getEntriesByName('https://cdn.jsdelivr.net/npm/@telnyx/webrtc@2.8.2/lib/bundle.js')[0]) || null;
+        const hasGlobal = !!(window.TelnyxWebRTC || window.Telnyx);
+        const hasClient = hasGlobal && ((window.TelnyxWebRTC && window.TelnyxWebRTC.Client) || (window.Telnyx && window.Telnyx.Client));
+        const errMsg = 'NOT LOADED' + (hasGlobal ? (hasClient ? '(no Client)' : '(no global)') : '(no global)');
+        setSdkDebug(errMsg, '#f55');
         console.error('@telnyx/webrtc SDK not loaded. Bundle onload fired?', !!window.__telnyxBundleLoaded,
                       'Telnyx-like globals on window:', candidates,
                       'Bundle perf entry:', bundleEntry ? `${bundleEntry.responseStatus} ${bundleEntry.duration}ms transferSize=${bundleEntry.transferSize}` : 'NOT FOUND');
@@ -613,11 +628,14 @@
       }
       if (!settings.login || !settings.password) {
         console.warn('No WebRTC credentials configured. Open Settings to add them.');
+        setSdkDebug('SDK ok, no creds', '#fa3');
         view.setStatus('Disconnected');
         return false;
       }
       try {
-        fsm.fire('reconnect');
+        setSdkDebug('connecting…', '#fa3');
+        // FSM: Initial -> Connecting (use 'connect', not 'reconnect' which only fires from Disconnected)
+        fsm.fire('connect');
         view.setStatus(fsm.state);
         telnyxClient = new TelnyxSDK.Client({
           login: settings.login,
@@ -627,11 +645,13 @@
         telnyxClient.on('telnyx.ready', () => {
           console.log('Telnyx: ready');
           fsm.fire('connectOk');
+          setSdkDebug('ready ✓', '#0f8');
           view.setStatus(fsm.state);
         });
         telnyxClient.on('telnyx.error', (err) => {
           console.error('Telnyx error:', err);
           fsm.fire('connectFail');
+          setSdkDebug('error: ' + (err && err.message || JSON.stringify(err)).slice(0, 40), '#f55');
           view.setStatus(fsm.state);
         });
         telnyxClient.on('telnyx.notification', (n) => {
@@ -642,6 +662,7 @@
         return true;
       } catch (e) {
         console.error('Failed to init Telnyx:', e);
+        setSdkDebug('init failed', '#f55');
         fsm.fire('connectFail');
         view.setStatus(fsm.state);
         return false;

@@ -140,6 +140,48 @@
       max-width: calc(100vw - 32px);
       text-align: center;
     }
+
+    /* ───── Persistent call bar (v0.4.1 — mobile-friendly always-visible strip) ───── */
+    .call-bar {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      z-index: 60;
+      background: linear-gradient(180deg, rgba(20,22,32,0.98) 0%, rgba(11,12,18,0.98) 100%);
+      border-top: 1px solid rgba(0, 212, 170, 0.4);
+      backdrop-filter: blur(12px);
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) 16px;
+      box-shadow: 0 -8px 24px rgba(0,0,0,0.5);
+      display: flex; align-items: center; gap: 12px;
+      animation: slideUp 0.25s ease-out;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .call-bar-pulse {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #00d4aa;
+      box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.6);
+      animation: pulse 1.4s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse {
+      0%   { box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.6); }
+      70%  { box-shadow: 0 0 0 12px rgba(0, 212, 170, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(0, 212, 170, 0); }
+    }
+    .call-bar-info { flex: 1; min-width: 0; }
+    .call-bar-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+    .call-bar-number { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .call-bar-actions { display: flex; gap: 8px; flex-shrink: 0; }
+    .call-bar-btn {
+      width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+      transition: transform 0.1s;
+    }
+    .call-bar-btn:active { transform: scale(0.92); }
+    .call-bar-accept { background: #00d4aa; color: #001a14; }
+    .call-bar-decline { background: #ef4444; color: #fff; }
+    .call-bar-open    { background: rgba(255,255,255,0.1); color: #fff; }
     .incoming-avatar {
       width: 96px; height: 96px; border-radius: 50%;
       background: linear-gradient(135deg, var(--accent2), var(--accent));
@@ -207,7 +249,7 @@
         </div>
         <div>
           <h1 class="text-xl font-bold">agentops</h1>
-          <p class="text-xs text-gray-500 mono">v0.4.0 · agent console · Telnyx WebRTC</p>
+          <p class="text-xs text-gray-500 mono">v0.4.1 · agent console · Telnyx WebRTC</p>
         </div>
       </div>
       <h2 class="text-2xl font-bold mb-1">Sign in</h2>
@@ -241,7 +283,7 @@
           </div>
           <div>
             <h1 class="text-base font-bold">agentops</h1>
-            <p class="text-[10px] text-gray-500 mono">v0.4.0 · <span id="user-label">agent</span></p>
+            <p class="text-[10px] text-gray-500 mono">v0.4.1 · <span id="user-label">agent</span></p>
           </div>
           <span class="ml-3 pill pill-on" id="status-pill"><span class="dot dot-on" id="status-dot"></span> <span id="status-text">Ready</span></span>
           <span id="sdk-debug" class="ml-2 text-[10px] mono text-gray-500" title="WebRTC SDK diagnostic">sdk:…</span>
@@ -499,6 +541,20 @@
     </div>
   </div>
 
+  <!-- PERSISTENT CALL BAR (v0.4.1) — always-visible strip on mobile when a call is pending or active -->
+  <div id="call-bar" class="call-bar hidden" role="region" aria-label="Active call controls">
+    <div class="call-bar-pulse" id="call-bar-pulse"></div>
+    <div class="call-bar-info">
+      <div class="call-bar-label" id="call-bar-label">Incoming call</div>
+      <div class="call-bar-number" id="call-bar-number">—</div>
+    </div>
+    <div class="call-bar-actions">
+      <button class="call-bar-btn call-bar-accept hidden" id="call-bar-accept" onclick="acceptIncomingCall()" title="Accept" aria-label="Accept call">📞</button>
+      <button class="call-bar-btn call-bar-decline" id="call-bar-decline" onclick="endOrDeclineCall()" title="End call" aria-label="Decline or end call">📵</button>
+      <button class="call-bar-btn call-bar-open hidden" id="call-bar-open" onclick="openActiveCallFromBar()" title="Open" aria-label="Open call details">⤴</button>
+    </div>
+  </div>
+
   <!-- Toast stack (top-right slide-in) -->
   <div class="toast-stack" id="toast-stack"></div>
 
@@ -641,6 +697,7 @@
         audio.stopRingtone();
         // Missed call (remote hung up before user answered)
         registerMissedCall();
+        hideCallBar();
       }
       if (e.from === 'ReceivingCall' && e.to !== 'OnCall') {
         audio.stopRingtone();
@@ -652,6 +709,10 @@
       // Mute / Hold / Keypad / Transfer button visibility
       updateInCallButtons();
       updateCallCardStyle();
+
+      // Persistent call bar (v0.4.1) — refresh on every FSM transition so it
+      // stays in sync with the actual call state on mobile.
+      try { updateCallBar(); } catch (e) { /* bar not yet in DOM */ }
     });
 
     // ============================================================
@@ -1883,6 +1944,8 @@
       avatar.textContent = (num || '?').toString().replace(/[^0-9]/g, '').slice(-1) || '+';
       modal.classList.remove('hidden');
       startRingtone();
+      // v0.4.1: also raise the persistent mobile-friendly call bar
+      try { updateCallBar(); } catch (e) {}
     }
     function hideIncomingModal() {
       const modal = document.getElementById('incoming-modal');
@@ -1890,6 +1953,9 @@
       pendingIncomingCall = null;
       pendingAccept = false;
       stopRingtone();
+      // v0.4.1: also lower the persistent call bar (will re-raise if the
+      // FSM is still in ReceivingCall or OnCall)
+      try { updateCallBar(); } catch (e) {}
     }
     function acceptIncomingCall() {
       if (!pendingIncomingCall) return;
@@ -1914,6 +1980,8 @@
           message: 'Connected to ' + (pendingIncomingCall.from || 'caller'),
           durationMs: 3000,
         });
+        // v0.4.1: refresh the persistent call bar to show "On call"
+        try { updateCallBar(); } catch (e) {}
       } else {
         pendingAccept = true;
         // The modal stays open until the SDK call arrives. Give it a
@@ -1935,14 +2003,102 @@
     }
     function declineIncomingCall() {
       stopRingtone();
+      // 1) ALWAYS tell Telnyx to reject the call on its side — this is the
+      //    only thing that actually closes the WebRTC media path. The local
+      //    `activeCall` is null for inbound until the user accepts, so the
+      //    browser SDK has no object to hangup — we MUST hit the server.
+      const cci = pendingIncomingCall && pendingIncomingCall.call_control_id;
+      if (cci) {
+        fetch(`https://bk-jr-api.aixlabs.fun/api/calls/${encodeURIComponent(cci)}/reject`, {
+          method: 'POST', headers: { 'X-Tenant-Id': 'default' },
+        }).catch((e) => console.warn('reject call API failed', e));
+      }
+      // 2) Best-effort local cleanup (if WebRTC SDK already has the call object)
       if (activeCall) {
-        try { activeCall.hangup(); } catch (e) { console.error('hangup() failed', e); }
+        try { activeCall.hangup(); } catch (e) { console.warn('hangup() failed', e); }
       }
-      if (fsm.state === 'ReceivingCall' || fsm.state === 'Ready') {
-        try { fsm.fire('remoteHangup'); } catch (e) {}
-      }
+      // 3) Move the FSM out of ReceivingCall so the UI stops ringing
+      try {
+        if (fsm.state === 'ReceivingCall') fsm.fire('remoteHangup');
+        else if (fsm.state === 'Ready') {}  // no-op; already idle
+      } catch (e) { /* FSM guard may reject; safe to ignore */ }
       view.setStatus(fsm.state);
       hideIncomingModal();
+      hideCallBar();
+      showToast({ kind: 'info', icon: '📵', title: 'Call declined', durationMs: 2000 });
+    }
+
+    // Used by the persistent call bar's "end" button. Same as decline for
+    // an unanswered inbound, or sends a hangup for an active one.
+    function endOrDeclineCall() {
+      if (activeCall) {
+        // Active call — hang up via SDK + server
+        const cci = activeCall.parameters?.CallControlId || activeCall.id;
+        if (cci) {
+          fetch(`https://bk-jr-api.aixlabs.fun/api/calls/${encodeURIComponent(cci)}/hangup`, {
+            method: 'POST', headers: { 'X-Tenant-Id': 'default' },
+          }).catch((e) => console.warn('hangup API failed', e));
+        }
+        try { activeCall.hangup(); } catch (e) {}
+      } else {
+        declineIncomingCall();
+        return;
+      }
+      stopRingtone();
+      try {
+        if (fsm.state !== 'Ready') fsm.fire('localHangup');
+      } catch (e) {}
+      view.setStatus(fsm.state);
+      hideCallBar();
+    }
+
+    // Opens the softphone and jumps to the active call card (for the "open" bar button).
+    function openActiveCallFromBar() {
+      const card = document.getElementById('call-card');
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // ───── Persistent call bar (v0.4.1) ─────
+    function showCallBar(opts) {
+      const bar = document.getElementById('call-bar');
+      if (!bar) return;
+      const labelEl = document.getElementById('call-bar-label');
+      const numEl = document.getElementById('call-bar-number');
+      const acceptBtn = document.getElementById('call-bar-accept');
+      const declineBtn = document.getElementById('call-bar-decline');
+      const openBtn = document.getElementById('call-bar-open');
+      if (labelEl) labelEl.textContent = opts.label || 'Call';
+      if (numEl) numEl.textContent = opts.number || '—';
+      // Show the right buttons for the state
+      if (acceptBtn) acceptBtn.classList.toggle('hidden', !opts.showAccept);
+      if (openBtn)   openBtn.classList.toggle('hidden',   !opts.showOpen);
+      if (declineBtn) declineBtn.classList.toggle('hidden', !opts.showDecline);
+      if (declineBtn) declineBtn.title = opts.declineTitle || 'End call';
+      bar.classList.remove('hidden');
+    }
+    function hideCallBar() {
+      const bar = document.getElementById('call-bar');
+      if (bar) bar.classList.add('hidden');
+    }
+    function updateCallBar() {
+      // Decide what to show based on FSM state
+      if (fsm.state === 'ReceivingCall' && pendingIncomingCall) {
+        showCallBar({
+          label: 'Incoming call',
+          number: pendingIncomingCall.from || 'Unknown',
+          showAccept: true, showDecline: true, showOpen: false,
+        });
+      } else if (fsm.state === 'OnCall' || fsm.state === 'OnHold' || fsm.state === 'Dialing') {
+        const num = (activeCall && (activeCall.options?.remoteCallerNumber || activeCall.parameters?.From)) || pendingIncomingCall?.from || 'Active call';
+        showCallBar({
+          label: fsm.state === 'Dialing' ? 'Dialing…' : 'On call',
+          number: num,
+          showAccept: false, showDecline: true, showOpen: true,
+          declineTitle: 'End call',
+        });
+      } else {
+        hideCallBar();
+      }
     }
 
     // ───── WS event dispatch ─────

@@ -107,6 +107,20 @@
     return e;
   }
   function clear(node) { while (node && node.firstChild) node.removeChild(node.firstChild); }
+  // Backend wraps lists as {campaigns:[]}, {contacts:[]}, {scheduled:[]},
+  // or returns bare arrays. Accept any of them.
+  function unwrapList(data, keys) {
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === 'object') {
+      for (const k of keys) {
+        if (Array.isArray(data[k])) return data[k];
+        if (data[k] && typeof data[k] === 'object' && Array.isArray(data[k].items)) return data[k].items;
+      }
+    }
+    return [];
+  }
+  // Some endpoints use "type" for the campaign kind, some use "kind". Accept either.
+  function campaignKind(c) { return c.kind || c.type || 'sms'; }
   function fmtPhone(s) {
     if (!s) return '';
     const d = String(s).replace(/[^\d+]/g, '');
@@ -234,13 +248,13 @@
       setTimeout(loadCampaigns, 3000);
       return;
     }
-    state.campaigns = Array.isArray(campaigns) ? campaigns : (campaigns.items || []);
-    state.scheduled = Array.isArray(scheduled) ? scheduled : (scheduled.items || []);
+    state.campaigns = unwrapList(campaigns, ['campaigns', 'items']);
+    state.scheduled = unwrapList(scheduled, ['scheduled', 'items']);
 
     // Also pick up any future contact cache fetch opportunistically. The list
     // page doesn't need it but the modals will. This warms the cache.
     API.contacts.list()
-      .then(c => { state.contacts = Array.isArray(c) ? c : (c.items || []); })
+      .then(c => { state.contacts = unwrapList(c, ['contacts', 'items']); })
       .catch(err => { console.warn('contacts.list failed', err); state.contacts = []; });
 
     renderCampaignsList();
@@ -276,7 +290,7 @@
       status === 'paused'    ? 'pill pill-warn' :
       status === 'failed'    ? 'pill pill-off'  :
                                'pill pill-off';
-    const typeClass = c.kind === 'sms' ? 'pill pill-on' : (c.kind === 'call' ? 'pill pill-warn' : 'pill pill-off');
+    const typeClass = campaignKind(c) === 'sms' ? 'pill pill-on' : (campaignKind(c) === 'call' ? 'pill pill-warn' : 'pill pill-off');
 
     const total = c.total || c.contact_ids?.length || 0;
     const sent  = c.sent  || c.stats?.sent   || 0;
@@ -298,7 +312,7 @@
       el('div', { class: 'flex-1 min-w-0' }, [
         el('div', { class: 'flex flex-wrap items-center gap-2' }, [
           el('div', { class: 'font-medium truncate' }, c.name || c.id),
-          el('span', { class: typeClass }, (c.kind || 'sms').toUpperCase()),
+          el('span', { class: typeClass }, campaignKind(c).toUpperCase()),
           el('span', { class: pillClass }, status.toUpperCase()),
           c.schedule_at ? el('span', { class: 'text-xs text-gray-500 mono' }, '· ⏰ ' + fmtDate(c.schedule_at)) : null,
         ]),
@@ -406,7 +420,7 @@
       body.innerHTML = `
         <div class="flex flex-wrap items-center gap-2 mb-3">
           <div class="font-medium text-base">${escapeHtml(detail.name || id)}</div>
-          <span class="pill">${escapeHtml((detail.kind || 'sms').toUpperCase())}</span>
+          <span class="pill">${escapeHtml(campaignKind(detail).toUpperCase())}</span>
           <span class="${statusPill}">${escapeHtml(status.toUpperCase())}</span>
           <span class="text-xs text-gray-500">updated ${relTime(detail.updated_at)}</span>
         </div>
@@ -564,7 +578,7 @@
         renderContacts(state.contacts);
       } else {
         API.contacts.list()
-          .then(data => { state.contacts = Array.isArray(data) ? data : (data.items || []); renderContacts(state.contacts); })
+          .then(data => { state.contacts = unwrapList(data, ['contacts', 'items']); renderContacts(state.contacts); })
           .catch(err => { list.innerHTML = '<div class="text-xs text-red-400 p-2">Failed to load contacts: ' + escapeHtml(err.message) + '</div>'; });
       }
 
@@ -853,7 +867,7 @@
       if (state.contacts.length > 0) renderContacts(state.contacts);
       else {
         API.contacts.list()
-          .then(data => { state.contacts = Array.isArray(data) ? data : (data.items || []); renderContacts(state.contacts); })
+          .then(data => { state.contacts = unwrapList(data, ['contacts', 'items']); renderContacts(state.contacts); })
           .catch(err => { list.innerHTML = '<div class="text-xs text-red-400 p-2">Failed: ' + escapeHtml(err.message) + '</div>'; });
       }
       root.querySelector('#cmp-bc-text').addEventListener('input', updateEst);
@@ -898,7 +912,7 @@
       body.innerHTML = '<div class="text-xs text-gray-500 p-3">Loading…</div>';
       API.sms.scheduled()
         .then(data => {
-          const items = Array.isArray(data) ? data : (data.items || []);
+          const items = unwrapList(data, ['scheduled', 'items']);
           state.scheduled = items;
           if (items.length === 0) {
             body.innerHTML = '<div class="text-xs text-gray-500 p-4 text-center">No scheduled SMS pending.</div>';
@@ -970,7 +984,7 @@
           closeModal();
         }));
       };
-      const cb = (data) => { state.contacts = Array.isArray(data) ? data : (data.items || []); render(state.contacts, ''); };
+      const cb = (data) => { state.contacts = unwrapList(data, ['contacts', 'items']); render(state.contacts, ''); };
       if (state.contacts.length > 0) render(state.contacts, '');
       else API.contacts.list().then(cb).catch(err => { root.querySelector('#cmp-cp-list').innerHTML = '<div class="text-xs text-red-400 p-3">' + escapeHtml(err.message) + '</div>'; });
       root.querySelector('#cmp-cp-search').addEventListener('input', e => render(state.contacts, e.target.value.toLowerCase().trim()));
@@ -1011,7 +1025,7 @@
         try {
           const created = await API.contacts.create({ name, phone, notes });
           // Refresh local cache
-          API.contacts.list().then(c => { state.contacts = Array.isArray(c) ? c : (c.items || []); }).catch(() => {});
+          API.contacts.list().then(c => { state.contacts = unwrapList(c, ['contacts', 'items']); }).catch(() => {});
           closeModal();
           if (onCreated) onCreated(created);
           toast('Contact saved', 'ok');

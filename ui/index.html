@@ -12,6 +12,19 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="agentops">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // v0.4.3: add an `xs` breakpoint between mobile and `sm` (Tailwind CDN has no `xs` by default).
+    // We use 420px so phones in landscape / larger Androids keep the desktop-style header (status
+    // pill text, WS/SDK diagnostics inline). Smaller phones collapse to the mobile sheet.
+    if (window.tailwind && window.tailwind.config) {
+      window.tailwind.config = Object.assign({}, window.tailwind.config, {
+        theme: Object.assign({}, (window.tailwind.config && window.tailwind.config.theme) || {}, {
+          screens: Object.assign({ xs: '420px' },
+            ((window.tailwind.config && window.tailwind.config.theme && window.tailwind.config.theme.screens) || {})),
+        }),
+      });
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -268,7 +281,7 @@
         </div>
         <div>
           <h1 class="text-xl font-bold">agentops</h1>
-          <p class="text-xs text-gray-500 mono">v0.4.2 Â· agent console Â· Telnyx WebRTC</p>
+          <p class="text-xs text-gray-500 mono">v0.4.3 · agent console · Telnyx WebRTC</p>
         </div>
       </div>
       <h2 class="text-2xl font-bold mb-1">Sign in</h2>
@@ -295,36 +308,67 @@
   <!-- MAIN SOFTPHONE -->
   <div id="softphone" class="hidden min-h-screen flex flex-col">
     <header class="border-b border-gray-800 sticky top-0 z-20" style="background: rgba(10, 10, 15, 0.92); backdrop-filter: blur(8px);">
-      <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, var(--accent), var(--accent2))">
+      <!-- Row 1: brand + status (mobile) OR brand + status + balance + actions (desktop) -->
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-3 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style="background: linear-gradient(135deg, var(--accent), var(--accent2))">
             <svg class="w-4 h-4" fill="none" stroke="#001a14" viewBox="0 0 24 24" stroke-width="2.5"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.5 4.34a1 1 0 01-.27 1.05L8.21 10.7a13 13 0 006.07 6.07l1.66-1.25a1 1 0 011.05-.27l4.34 1.5a1 1 0 01.68.95V20a2 2 0 01-2 2h-1C9.61 22 2 14.39 2 5V4z"/></svg>
           </div>
-          <div>
-            <h1 class="text-base font-bold">agentops</h1>
-            <p class="text-[10px] text-gray-500 mono">v0.4.2 Â· <span id="user-label">agent</span></p>
+          <div class="min-w-0">
+            <h1 class="text-base font-bold truncate">agentops</h1>
+            <p class="text-[10px] text-gray-500 mono truncate">v0.4.3 · <span id="user-label">agent</span></p>
           </div>
-          <span class="ml-3 pill pill-on" id="status-pill"><span class="dot dot-on" id="status-dot"></span> <span id="status-text">Ready</span></span>
-          <span id="sdk-debug" class="ml-2 text-[10px] mono text-gray-500" title="WebRTC SDK diagnostic">sdk:â€¦</span>
-          <span class="ml-2 ws-status text-[10px] mono text-gray-500" title="WebSocket event stream" id="ws-status"><span class="dot dot-off"></span> <span id="ws-status-text">ws:off</span></span>
+          <!-- status pill: visible on mobile, hidden on very small (where space is precious) -->
+          <span class="ml-2 sm:ml-3 pill pill-on shrink-0" id="status-pill"><span class="dot dot-on" id="status-dot"></span> <span id="status-text" class="hidden xs:inline">Ready</span></span>
         </div>
-        <div class="flex items-center gap-3">
+        <!-- Diagnostics + balance + actions: hidden on mobile (we use a hamburger instead) -->
+        <div class="hidden md:flex items-center gap-3 shrink-0">
+          <span id="sdk-debug" class="text-[10px] mono text-gray-500" title="WebRTC SDK diagnostic">sdk:…</span>
+          <span class="ws-status text-[10px] mono text-gray-500" title="WebSocket event stream" id="ws-status"><span class="dot dot-off"></span> <span id="ws-status-text">ws:off</span></span>
           <div class="text-right">
             <p class="text-xs text-gray-500">Balance</p>
-            <p class="text-lg font-bold mono" id="header-balance">$â€” USD</p>
+            <p class="text-lg font-bold mono" id="header-balance">$— USD</p>
           </div>
           <button class="btn btn-ghost" onclick="openSettings()">Settings</button>
           <button class="btn btn-ghost" onclick="logout()">Sign out</button>
         </div>
+        <!-- Mobile only: hamburger that opens the same actions in a sheet -->
+        <button id="header-menu-btn" class="md:hidden w-9 h-9 rounded-lg flex items-center justify-center text-gray-300 hover:bg-white/5 active:bg-white/10" onclick="toggleHeaderMenu()" aria-label="Open menu">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
       </div>
-      <div class="max-w-7xl mx-auto px-6 flex gap-1 overflow-x-auto">
-        <div class="tab tab-active" data-tab="dialer" onclick="switchTab('dialer')">ðŸ“ž Softphone</div>
-        <div class="tab" data-tab="messages" onclick="switchTab('messages')">ðŸ’¬ Messages<span class="tab-badge hidden" id="messages-badge">0</span></div>
-        <div class="tab" data-tab="history" onclick="switchTab('history')">ðŸ“‹ History<span class="tab-badge hidden" id="history-badge">0</span></div>
-        <div class="tab" data-tab="recordings" onclick="switchTab('recordings')">ðŸŽ™ï¸ Recordings<span class="tab-badge tab-badge-accent hidden" id="recordings-badge">0</span></div>
-        <div class="tab" data-tab="admin" onclick="switchTab('admin')">âš™ï¸ Admin</div>
+      <!-- Mobile-only compact diagnostics row (so the SDK/WS state is still visible on phones) -->
+      <div class="md:hidden max-w-7xl mx-auto px-3 flex items-center gap-3 pb-1 text-[10px] mono text-gray-500">
+        <span id="sdk-debug-m" title="WebRTC SDK diagnostic">sdk:…</span>
+        <span class="ws-status" title="WebSocket event stream" id="ws-status-m"><span class="dot dot-off"></span> <span id="ws-status-text-m">ws:off</span></span>
+        <span class="ml-auto">Balance <span class="text-gray-300 font-semibold mono" id="header-balance-m">$— USD</span></span>
+      </div>
+      <!-- Tab bar — wraps on mobile, scrolls horizontally only if it doesn't fit -->
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 flex gap-1 overflow-x-auto">
+        <div class="tab tab-active shrink-0" data-tab="dialer" onclick="switchTab('dialer')">📞 Softphone</div>
+        <div class="tab shrink-0" data-tab="messages" onclick="switchTab('messages')">💬 Messages<span class="tab-badge hidden" id="messages-badge">0</span></div>
+        <div class="tab shrink-0" data-tab="history" onclick="switchTab('history')">📋 History<span class="tab-badge hidden" id="history-badge">0</span></div>
+        <div class="tab shrink-0" data-tab="recordings" onclick="switchTab('recordings')">🎙️ Recordings<span class="tab-badge tab-badge-accent hidden" id="recordings-badge">0</span></div>
+        <div class="tab shrink-0" data-tab="admin" onclick="switchTab('admin')">⚙️ Admin</div>
       </div>
     </header>
+    <!-- Mobile menu sheet (hidden by default, toggled by #header-menu-btn) -->
+    <div id="header-menu" class="hidden fixed inset-0 z-[70] md:hidden" role="dialog" aria-label="Menu">
+      <div class="absolute inset-0 bg-black/60" onclick="toggleHeaderMenu()"></div>
+      <div class="absolute top-0 right-0 w-64 max-w-[80vw] h-full bg-[#0f1018] border-l border-white/10 p-4 flex flex-col gap-2" style="box-shadow: -8px 0 24px rgba(0,0,0,0.6);">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-400">Menu</h3>
+          <button class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-300 hover:bg-white/5" onclick="toggleHeaderMenu()" aria-label="Close menu">✕</button>
+        </div>
+        <div class="rounded-lg p-3 bg-white/5">
+          <p class="text-[10px] uppercase tracking-widest text-gray-500">Balance</p>
+          <p class="text-xl font-bold mono" id="header-balance-sheet">$— USD</p>
+        </div>
+        <button class="btn btn-ghost justify-start text-left" onclick="openSettings(); toggleHeaderMenu();">⚙️  Settings</button>
+        <button class="btn btn-ghost justify-start text-left" onclick="logout(); toggleHeaderMenu();">⎋  Sign out</button>
+        <div class="mt-auto text-[10px] text-gray-500 mono">v0.4.3 · <span id="user-label-sheet">agent</span></div>
+      </div>
+    </div>
 
     <main class="max-w-7xl mx-auto px-6 py-6 flex-1 w-full">
 
@@ -1064,6 +1108,12 @@
     }
 
     function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
+
+    // v0.4.3: Mobile header hamburger menu
+    function toggleHeaderMenu() {
+      const m = document.getElementById('header-menu');
+      if (m) m.classList.toggle('hidden');
+    }
     function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
 
     // @telnyx/webrtc 2.x bundle exposes window.TelnyxWebRTC = { TelnyxRTC: <class>, __esModule: true }.
@@ -1080,11 +1130,13 @@
 
     // Surface SDK state to the visible UI so we can debug without devtools.
     function setSdkDebug(msg, color) {
-      const el = document.getElementById('sdk-debug');
-      if (el) {
-        el.textContent = 'sdk:' + msg;
-        if (color) el.style.color = color;
-      }
+      ['sdk-debug', 'sdk-debug-m'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.textContent = 'sdk:' + msg;
+          if (color) el.style.color = color;
+        }
+      });
     }
 
     // Wait for the bundle to register. Resolves with the SDK class or null on timeout.
@@ -1746,7 +1798,10 @@
           : emptyState('ðŸ¤–', 'No AI agents', 'Provision an agent to start automating calls');
         // Balance in header
         if (d.balance && d.balance.balance != null) {
-          document.getElementById('header-balance').textContent = `$${d.balance.balance} ${d.balance.currency || 'USD'}`;
+          const bal = `$${d.balance.balance} ${d.balance.currency || 'USD'}`;
+          const a = document.getElementById('header-balance');      if (a) a.textContent = bal;
+          const b = document.getElementById('header-balance-m');    if (b) b.textContent = bal;
+          const c = document.getElementById('header-balance-sheet'); if (c) c.textContent = bal;
         }
       } catch (e) {
         numbersEl.innerHTML = emptyState('âš ï¸', 'Failed to load admin', e.message);
@@ -1920,15 +1975,19 @@
     }
 
     function setWsStatus(state, label) {
-      const root = document.getElementById('ws-status');
-      const dot = root ? root.querySelector('.dot') : null;
-      const text = document.getElementById('ws-status-text');
-      if (text) text.textContent = label;
-      if (dot) {
-        dot.className = 'dot ' + (state === 'on' ? 'dot-on'
-                                : state === 'connecting' ? 'dot-warn'
-                                : 'dot-off');
-      }
+      ['ws-status', 'ws-status-m'].forEach(id => {
+        const root = document.getElementById(id);
+        const dot = root ? root.querySelector('.dot') : null;
+        if (root) {
+          const text = root.querySelector('[id$="ws-status-text"], [id$="-text-m"]');
+          if (text) text.textContent = label;
+          if (dot) {
+            dot.className = 'dot ' + (state === 'on' ? 'dot-on'
+                                    : state === 'connecting' ? 'dot-warn'
+                                    : 'dot-off');
+          }
+        }
+      });
     }
 
     function connectWs() {

@@ -600,13 +600,16 @@
     function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
     function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
 
-    // @telnyx/webrtc 2.x bundle exposes window.TelnyxWebRTC (not window.Telnyx)
-    // The bundle loads asynchronously, so we MUST look it up lazily at call time —
-    // a top-level `const TelnyxSDK = window.TelnyxWebRTC` evaluates while the bundle
-    // is still in flight, captures `null`, and silently breaks the connection.
+    // @telnyx/webrtc 2.x bundle exposes window.TelnyxWebRTC = { TelnyxRTC: <class>, __esModule: true }.
+    // The class is at .TelnyxRTC (named export), NOT .Client.
     function getTelnyxSDK() {
       if (typeof window === 'undefined') return null;
-      return window.TelnyxWebRTC || window.Telnyx || null;
+      const sdk = window.TelnyxWebRTC || window.Telnyx || null;
+      if (!sdk) return null;
+      // Accept either: the bundle's named-export shape { TelnyxRTC } OR a class directly
+      if (typeof sdk === 'function') return sdk;
+      if (sdk.TelnyxRTC) return sdk.TelnyxRTC;
+      return null;
     }
 
     // Surface SDK state to the visible UI so we can debug without devtools.
@@ -618,13 +621,13 @@
       }
     }
 
-    // Wait for the bundle to register. Resolves with the SDK or null on timeout.
+    // Wait for the bundle to register. Resolves with the SDK class or null on timeout.
     function waitForTelnyxSDK(timeoutMs = 5000) {
       return new Promise(resolve => {
         const start = Date.now();
         const check = () => {
           const sdk = getTelnyxSDK();
-          if (sdk && sdk.Client) return resolve(sdk);
+          if (sdk) return resolve(sdk);
           if (Date.now() - start > timeoutMs) return resolve(null);
           setTimeout(check, 100);
         };
@@ -634,19 +637,16 @@
 
     async function initTelnyx() {
       setSdkDebug('waiting…', '#888');
-      const TelnyxSDK = await waitForTelnyxSDK();
-      if (!TelnyxSDK || !TelnyxSDK.Client) {
+      const TelnyxRTC = await waitForTelnyxSDK();
+      if (!TelnyxRTC) {
         // Diagnose what's actually on window so we can see why the SDK didn't register
         const candidates = Object.keys(window).filter(k => /telnyx|webrtc|sip/i.test(k));
         const bundleEntry = (performance.getEntriesByName && performance.getEntriesByName('https://cdn.jsdelivr.net/npm/@telnyx/webrtc@2.8.2/lib/bundle.js')[0]) || null;
-        const hasGlobal = !!(window.TelnyxWebRTC || window.Telnyx);
-        const hasClient = hasGlobal && ((window.TelnyxWebRTC && window.TelnyxWebRTC.Client) || (window.Telnyx && window.Telnyx.Client));
-        // Summarize the bundle trace to know whether it ever loaded
         const trace = window.__bundleTrace || [];
         const traceSummary = trace.length
-          ? trace[trace.length - 1].hasClient ? 'has Client' : (trace[trace.length - 1].hasTelnyxWebRTC ? 'obj, no Client' : 'no global')
+          ? trace[trace.length - 1].hasTelnyxWebRTC ? 'has global' : 'no global'
           : 'no trace';
-        const errMsg = (hasClient ? 'NOT LOADED(?)' : 'NOT LOADED') + ' trace=' + traceSummary + ' onload=' + (!!window.__telnyxBundleLoaded) + ' samples=' + trace.length;
+        const errMsg = 'NOT LOADED' + ' trace=' + traceSummary + ' onload=' + (!!window.__telnyxBundleLoaded) + ' samples=' + trace.length;
         setSdkDebug(errMsg.slice(0, 60), '#f55');
         console.error('@telnyx/webrtc SDK not loaded.',
                       'Trace (last 5):', trace.slice(-5),
@@ -666,7 +666,7 @@
         // FSM: Initial -> Connecting (use 'connect', not 'reconnect' which only fires from Disconnected)
         fsm.fire('connect');
         view.setStatus(fsm.state);
-        telnyxClient = new TelnyxSDK.Client({
+        telnyxClient = new TelnyxRTC({
           login: settings.login,
           password: settings.password,
         });

@@ -8,7 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@telnyx/webrtc@2.8.2/lib/bundle.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@telnyx/webrtc@2.8.2/lib/bundle.js" crossorigin="anonymous"
+          onload="window.__telnyxBundleLoaded = true; console.log('Telnyx bundle onload fired, window.TelnyxWebRTC =', typeof window.TelnyxWebRTC);"
+          onerror="console.error('Telnyx bundle failed to load from CDN');"></script>
   <style>
     :root {
       --bg: #0a0a0f;
@@ -579,7 +581,12 @@
 
     function initTelnyx() {
       if (!TelnyxSDK || !TelnyxSDK.Client) {
-        console.error('@telnyx/webrtc SDK not loaded (window.TelnyxWebRTC missing)');
+        // Diagnose what's actually on window so we can see why the SDK didn't register
+        const candidates = Object.keys(window).filter(k => /telnyx|webrtc|sip/i.test(k));
+        const bundleEntry = (performance.getEntriesByName && performance.getEntriesByName('https://cdn.jsdelivr.net/npm/@telnyx/webrtc@2.8.2/lib/bundle.js')[0]) || null;
+        console.error('@telnyx/webrtc SDK not loaded. Bundle onload fired?', !!window.__telnyxBundleLoaded,
+                      'Telnyx-like globals on window:', candidates,
+                      'Bundle perf entry:', bundleEntry ? `${bundleEntry.responseStatus} ${bundleEntry.duration}ms transferSize=${bundleEntry.transferSize}` : 'NOT FOUND');
         view.setStatus('Disconnected');
         return false;
       }

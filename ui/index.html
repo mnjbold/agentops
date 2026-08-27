@@ -539,6 +539,29 @@
       } catch (e) { console.warn('Settings load failed:', e); }
     }
 
+    // Auto-fetch WebRTC credentials from the server (no manual paste needed)
+    async function autoFetchCredentials() {
+      try {
+        const r = await fetch(`${API_BASE}${API_PREFIX}/webrtc/credentials`);
+        const d = await r.json();
+        if (d.ok && d.login && d.password) {
+          settings.login = d.login;
+          settings.password = d.password;
+          if (d.connection_id) settings.connectionId = d.connection_id;
+          localStorage.setItem('w3j_softphone_settings', JSON.stringify(settings));
+          document.getElementById('settings-login').value = settings.login;
+          document.getElementById('settings-password').value = settings.password;
+          console.log('WebRTC credentials auto-loaded from server');
+          return true;
+        }
+        console.warn('No server-side WebRTC credentials:', d.error);
+        return false;
+      } catch (e) {
+        console.warn('Auto-fetch failed:', e);
+        return false;
+      }
+    }
+
     function saveSettings() {
       settings.login = document.getElementById('settings-login').value.trim();
       settings.password = document.getElementById('settings-password').value;
@@ -990,6 +1013,22 @@
       loadAdmin();
       // Poll for new events every 8s
       setInterval(loadDialerRecents, 8000);
+      // Auto-fetch WebRTC credentials from the server and auto-connect
+      autoFetchCredentials().then(ok => {
+        if (ok) {
+          // Give SDK a moment to load
+          setTimeout(() => {
+            initTelnyx();
+            console.log('Auto-connecting to Telnyx WebRTC…');
+          }, 500);
+        } else {
+          // Show a non-blocking hint
+          const pill = document.getElementById('status-pill');
+          if (pill) {
+            pill.title = 'No server-side WebRTC credentials — open Settings to add manually';
+          }
+        }
+      });
     }
     function logout() {
       localStorage.removeItem('w3j_session_token');

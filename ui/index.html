@@ -11,6 +11,29 @@
   <script src="https://cdn.jsdelivr.net/npm/@telnyx/webrtc@2.8.2/lib/bundle.js" crossorigin="anonymous"
           onload="window.__telnyxBundleLoaded = true; console.log('Telnyx bundle onload fired, window.TelnyxWebRTC =', typeof window.TelnyxWebRTC);"
           onerror="console.error('Telnyx bundle failed to load from CDN');"></script>
+  <script>
+    // Trace SDK global presence for 10s. Writes to a global var so the main script can show it.
+    (function traceBundle() {
+      const start = Date.now();
+      window.__bundleTrace = [];
+      const tick = () => {
+        const t = window.TelnyxWebRTC;
+        const has = !!t;
+        const isObj = has && typeof t === 'object';
+        const hasClient = isObj && !!t.Client;
+        window.__bundleTrace.push({
+          t: Date.now() - start,
+          onload: !!window.__telnyxBundleLoaded,
+          hasTelnyxWebRTC: has,
+          type: typeof t,
+          keys: isObj ? Object.keys(t).slice(0, 10) : null,
+          hasClient: hasClient,
+        });
+        if (Date.now() - start < 10000 && !hasClient) setTimeout(tick, 200);
+      };
+      tick();
+    })();
+  </script>
   <style>
     :root {
       --bg: #0a0a0f;
@@ -618,9 +641,15 @@
         const bundleEntry = (performance.getEntriesByName && performance.getEntriesByName('https://cdn.jsdelivr.net/npm/@telnyx/webrtc@2.8.2/lib/bundle.js')[0]) || null;
         const hasGlobal = !!(window.TelnyxWebRTC || window.Telnyx);
         const hasClient = hasGlobal && ((window.TelnyxWebRTC && window.TelnyxWebRTC.Client) || (window.Telnyx && window.Telnyx.Client));
-        const errMsg = 'NOT LOADED' + (hasGlobal ? (hasClient ? '(no Client)' : '(no global)') : '(no global)');
-        setSdkDebug(errMsg, '#f55');
-        console.error('@telnyx/webrtc SDK not loaded. Bundle onload fired?', !!window.__telnyxBundleLoaded,
+        // Summarize the bundle trace to know whether it ever loaded
+        const trace = window.__bundleTrace || [];
+        const traceSummary = trace.length
+          ? trace[trace.length - 1].hasClient ? 'has Client' : (trace[trace.length - 1].hasTelnyxWebRTC ? 'obj, no Client' : 'no global')
+          : 'no trace';
+        const errMsg = (hasClient ? 'NOT LOADED(?)' : 'NOT LOADED') + ' trace=' + traceSummary + ' onload=' + (!!window.__telnyxBundleLoaded) + ' samples=' + trace.length;
+        setSdkDebug(errMsg.slice(0, 60), '#f55');
+        console.error('@telnyx/webrtc SDK not loaded.',
+                      'Trace (last 5):', trace.slice(-5),
                       'Telnyx-like globals on window:', candidates,
                       'Bundle perf entry:', bundleEntry ? `${bundleEntry.responseStatus} ${bundleEntry.duration}ms transferSize=${bundleEntry.transferSize}` : 'NOT FOUND');
         view.setStatus('Disconnected');

@@ -123,6 +123,7 @@
         <div class="tab" data-tab="numbers" onclick="switchTab('numbers')">Numbers</div>
         <div class="tab" data-tab="agents" onclick="switchTab('agents')">AI Agents</div>
         <div class="tab" data-tab="calls" onclick="switchTab('calls')">Live calls</div>
+        <div class="tab" data-tab="recordings" onclick="switchTab('recordings')">Recordings</div>
         <div class="tab" data-tab="actions" onclick="switchTab('actions')">Quick actions</div>
       </div>
     </header>
@@ -202,9 +203,18 @@
           </div>
           <div id="calls-list" class="space-y-1 text-xs mono scroll-y" style="max-height: 600px"></div>
         </div>
-        <div class="panel p-5 mt-4">
-          <h3 class="font-semibold mb-3">Recent recordings (last 7 days)</h3>
-          <div id="recordings-list" class="space-y-2 text-xs"></div>
+      </div>
+
+      <!-- RECORDINGS -->
+      <div id="tab-recordings" class="tab-pane hidden">
+        <div class="panel p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold">Recent call recordings</h3>
+            <button class="btn btn-ghost" onclick="loadRecordings()">↻ refresh</button>
+          </div>
+          <p class="text-sm text-gray-500 hidden" id="recordings-empty">No recordings yet. Place a call to generate one.</p>
+          <p class="text-sm text-gray-500" id="recordings-loading">Loading…</p>
+          <div id="recordings-list" class="space-y-3"></div>
         </div>
       </div>
 
@@ -327,6 +337,7 @@
       $all('.tab').forEach(t => t.classList.toggle('tab-active', t.dataset.tab === name));
       $all('.tab-pane').forEach(p => p.classList.toggle('hidden', p.id !== 'tab-' + name));
       if (name === 'calls') refreshCalls();
+      if (name === 'recordings') loadRecordings();
     }
 
     async function loadState() {
@@ -411,23 +422,58 @@
         const ts = (e.timestamp || '').slice(0, 19);
         return `<div class="panel-2 px-3 py-2 flex justify-between gap-2"><span class="text-gray-500">${ts}</span><span class="text-${eventColor(e.event_type)}">${e.event_type}</span><span class="text-gray-400">${(e.call_control_id || '').slice(0, 30)}</span></div>`;
       }).join('') || '<p class="text-gray-500 p-3">no events</p>';
+    }
 
-      const rr = await api('/api/recordings?limit=10');
-      if (rr.ok) {
-        const rl = $('#recordings-list');
-        rl.innerHTML = (rr.body.recordings || []).map(r => {
-          const mp3 = (r.urls || {}).mp3 || Object.values(r.urls || {})[0] || '';
-          return `<div class="panel-2 p-3 flex items-center justify-between">
-            <div>
-              <p class="text-gray-400">${r.created_at || '—'}</p>
-              <p class="text-xs text-gray-500">${r.channels || '—'} ch · ${r.call_leg_id?.slice(0, 18) || '—'}</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="badge-recording">recording</span>
-              ${mp3 ? `<a href="${mp3}" target="_blank" class="btn btn-ghost text-xs">↗ open</a>` : ''}
-            </div>
-          </div>`;
-        }).join('') || '<p class="text-gray-500 text-sm">no recordings yet</p>';
+    function formatDuration(secs) {
+      if (!secs && secs !== 0) return '—';
+      const m = Math.floor(secs / 60);
+      const s = Math.floor(secs % 60);
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function timeAgo(iso) {
+      if (!iso) return '—';
+      const then = new Date(iso).getTime();
+      const now = Date.now();
+      const diff = Math.floor((now - then) / 1000);
+      if (diff < 60) return `${diff}s ago`;
+      if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+      return `${Math.floor(diff/86400)}d ago`;
+    }
+
+    async function loadRecordings() {
+      const list = document.getElementById('recordings-list');
+      const loading = document.getElementById('recordings-loading');
+      const empty = document.getElementById('recordings-empty');
+      if (!list) return;
+      loading.classList.remove('hidden');
+      empty.classList.add('hidden');
+      try {
+        const r = await fetch('https://bk-jr-api.aixlabs.fun/api/recordings?limit=20');
+        const data = await r.json();
+        const recs = data.recordings || [];
+        loading.classList.add('hidden');
+        if (recs.length === 0) {
+          empty.classList.remove('hidden');
+          list.innerHTML = '';
+          return;
+        }
+        list.innerHTML = recs.map(r => `
+      <div class="panel-2 p-4">
+        <div class="flex items-start justify-between mb-2">
+          <div>
+            <p class="text-sm font-semibold mono">${formatDuration(r.duration_secs)} · ${timeAgo(r.created_at)}</p>
+            <p class="text-xs text-gray-500 mono">leg ${(r.call_leg_id || '').substring(0, 8)}</p>
+          </div>
+          <span class="badge-recording">REC</span>
+        </div>
+        <audio controls preload="none" src="https://bk-jr-api.aixlabs.fun/api/recordings/audio/${r.id}" class="w-full mt-2"></audio>
+      </div>
+    `).join('');
+      } catch (e) {
+        loading.classList.add('hidden');
+        list.innerHTML = `<p class="text-sm text-red-400">Failed to load: ${e.message}</p>`;
       }
     }
 

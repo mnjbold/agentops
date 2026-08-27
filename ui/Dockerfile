@@ -3,6 +3,7 @@ LABEL org.opencontainers.image.source="https://github.com/mybijouai-creator/agen
 LABEL org.opencontainers.image.description="agentops — cloud telephony PWA shell"
 # PWA assets must land alongside index.html so the root scope serves them.
 COPY index.html      /usr/share/nginx/html/index.html
+COPY campaigns.js    /usr/share/nginx/html/campaigns.js
 COPY manifest.json   /usr/share/nginx/html/manifest.json
 COPY sw.js           /usr/share/nginx/html/sw.js
 COPY icons/          /usr/share/nginx/html/icons/

@@ -1948,11 +1948,10 @@
         return;
       }
       if (t === 'call.incoming') {
-        // Show the modal. If a call is already being handled, don't
-        // double-stack modals — instead, the first modal wins.
-        if (!pendingIncomingCall) {
-          showIncomingModal(d);
-        }
+        // Show the modal. If a call is already being handled, update it
+        // with the new caller — the first call was probably abandoned
+        // while the user wasn't watching.
+        showIncomingModal(d);
         return;
       }
       if (t === 'call.answered') {
